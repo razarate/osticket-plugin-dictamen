@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+  osticket:
+    build:
+      context: .
+      dockerfile: dockerfile
+    ports:
+      - 8080:80
+    volumes:
+      - ./osticket:/var/www/html/osticket/ 
+    depends_on:
+      - db 
+    command: bash -c "chown -R www-data:www-data /var/www/html/osticket && apache2-foreground"
+    networks:
+      - osticket-net
+
+  db:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: caracoles123
+      MYSQL_DATABASE: osticket
+      MYSQL_USER: santy
+      MYSQL_PASSWORD: caracoles123  # fixed key from MYSQL_PASS to MYSQL_PASSWORD
+    ports:
+      - 3306:3306
+    expose:
+      - 3306
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - osticket-net
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: caracoles123
+    networks:
+      - osticket-net
+
+volumes:
+  db-data:
+
+networks:
+  osticket-net:
