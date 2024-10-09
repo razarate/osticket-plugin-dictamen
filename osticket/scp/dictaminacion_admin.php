@@ -1,8 +1,5 @@
-<?php
-include('admin.inc.php');
-
+<?php include('admin.inc.php');
 $TABLE_PREFIX = "ostck_";
-
 $nav->setTabActive('manage');
 
 require(STAFFINC_DIR . 'header.inc.php');
@@ -14,24 +11,28 @@ if ($thisstaff && $thisstaff->isAdmin()) {
 }
 ?>
 <script>
-function editar(ticket_id) {
-    window.location.href = 'asignacion_dictamen.php?id=' + ticket_id + '&idEstado=3';
-}
+	function editar(ticket_id) {
+		window.location.href = 'asignacion_dictamen.php?id=' + ticket_id + '&idEstado=3';
+	}
+
+	function irConfiguracion() {
+		window.location.href = 'configuracion_dictamen.php';
+	}
 </script>
 
 <h1>Dictaminación</h1>
 
 <table border="1">
-    <thead>
-        <tr>
-            <th>Ticket</th>
-            <th>Asignar a </th>
-            <th>Estado</th>
-            <th>Editar</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php
+	<thead>
+		<tr>
+			<th>Ticket</th>
+			<th>Asignar a </th>
+			<th>Estado</th>
+			<th>Editar</th>
+		</tr>
+	</thead>
+	<tbody>
+		<?php
 		$sql = "SELECT ticket_id, number FROM " . $TABLE_PREFIX . "ticket";
 		$res = db_query($sql);
 
@@ -105,10 +106,10 @@ function editar(ticket_id) {
 			echo "</tr>";
 		}
 		?>
-    </tbody>
+	</tbody>
 </table>
-
-
+</br>
+<button onclick="irConfiguracion()">Configuración</button>
 
 <?php
 include(STAFFINC_DIR . 'footer.inc.php');
