@@ -23,7 +23,6 @@ $res_formulario = db_query($sql_idForm);
 
 if ($id_form = db_fetch_array($res_formulario)) {
     $idForm = $id_form['id'];
-    echo $idForm;
 
     $sql_form = "SELECT * FROM " . $TABLE_PREFIX . "form_field WHERE form_id=$idForm ORDER BY sort";
 
@@ -48,7 +47,7 @@ if ($id_form = db_fetch_array($res_formulario)) {
                 }
                 if ($pregunta_id != 'ticket_id' && $pregunta_id != '__CSRFToken__') {
                     $pregunta_label = isset($preguntas_labels[$pregunta_id]) ? $preguntas_labels[$pregunta_id] : '';
-                    $stmt_respuesta = db_query("INSERT INTO " . $TABLE_PREFIX . "dictaminacion_respuestas (id_staff, id_ticket, pregunta, pregunta_label, respuesta) VALUES ($staff_id, $ticket_id, $pregunta_id, $pregunta_label, $respuesta)");
+                    $stmt_respuesta = db_query("INSERT INTO " . $TABLE_PREFIX . "dictaminacion_respuestas (id_staff, id_ticket, pregunta, pregunta_label, respuesta) VALUES ($staff_id, $ticket_id, '$pregunta_id', '$pregunta_label', '$respuesta')");
                 }
             }
 
