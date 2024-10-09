@@ -1,13 +1,9 @@
 <?php
 $TABLE_PREFIX = "ostck_";
-
 /*$sql_prueba = "CREATE TABLE IF NOT EXISTS ost_dictaminacion_asignaciones(
-	id_Asignacion INT AUTO_INCREMENT PRIMARY KEY, id_ticket INT NOT NULL, id_staff INT NOT NULL) ENGINE=InnoDB;";
+	id_Asignacion INT AUTO_INCREMENT PRIMARY KEY, id_ticket INT NOT NULL, id_staff INT NOT NULL) ENGINE=InnoDB;";*/
 
-$sql = "DROP TABLE IF EXISTS ost_dictaminacion_asignaciones";
-
-
-
+/*
 $sql = 'CREATE TABLE IF NOT EXISTS '.TABLE_PREFIX."_search (
  *            `object_type` varchar(8) not null,
  *            `object_id` int(11) unsigned not null,
@@ -54,13 +50,11 @@ $sql = 'CREATE TABLE IF NOT EXISTS '.TABLE_PREFIX."_search (
 
 
 include ('admin.inc.php');
-
 $nav->setTabActive('manage');
 
 require_once(STAFFINC_DIR.'header.inc.php');
 
 //Tabla::crearTabla();
-
 $est = 0;
 global $est;
 
