@@ -2,25 +2,27 @@ version: '3'
 
 services:
   osticket:
-    image: santiago840/osticket-dictaminacion:osticket
+    build:
+      context: .
+      dockerfile: dockerfile
     ports:
       - 8080:80
     volumes:
-      - ./osticket:/var/www/html/osticket/
+      - ./osticket:/var/www/html/osticket/ 
     depends_on:
-      - db
+      - db 
     command: bash -c "chown -R www-data:www-data /var/www/html/osticket && apache2-foreground"
     networks:
       - osticket-net
 
   db:
-    image: santiago840/osticket-dictaminacion:bd
+    image: mysql:latest
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: caracoles123
       MYSQL_DATABASE: osticket
       MYSQL_USER: santy
-      MYSQL_PASSWORD: caracoles123
+      MYSQL_PASSWORD: caracoles123  # fixed key from MYSQL_PASS to MYSQL_PASSWORD
     ports:
       - 3306:3306
     expose:
@@ -31,7 +33,7 @@ services:
       - osticket-net
 
   phpmyadmin:
-    image: santiago840/osticket-dictaminacion:myphpadmin
+    image: phpmyadmin/phpmyadmin
     ports:
       - "8081:80"
     environment:
