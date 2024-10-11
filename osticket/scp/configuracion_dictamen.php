@@ -1,11 +1,19 @@
 <?php
 $TABLE_PREFIX = "ostck_";
-$sql = "CREATE TABLE IF NOT EXISTS ";
-
+$id_lista = 0;
 $sql_prueba = "CREATE TABLE IF NOT EXISTS ost_dictaminacion_listas_positivas(id_positiva INT AUTO_INCREMENT PRIMARY KEY,
 	id_Asignacion INT AUTO_INCREMENT PRIMARY KEY, id_ticket INT NOT NULL, id_staff INT NOT NULL) ENGINE=InnoDB;";
 
-$sql_listas = "SELECT * FROM " . $TABLE_PREFIX . "list WHERE type = 'NULL'";
+//$sql_listas = "SELECT * FROM " . $TABLE_PREFIX . "list";
+$sql_valores_lista = "SELECT * FROM " . $TABLE_PREFIX . "list_items WHERE list_id = " . $id_lista;
+/* $sql_listas = "SELECT L.name AS lista_nombre, I.value AS item_valor 
+FROM " . $TABLE_PREFIX . "list L
+JOIN " . $TABLE_PREFIX . "list_items I ON L.id = I.list_id"; */
+
+$sql_listas = "SELECT L.id AS lista_id, L.name AS lista_nombre 
+FROM " . $TABLE_PREFIX . "list L
+JOIN " . $TABLE_PREFIX . "list_items I ON L.id = I.list_id
+GROUP BY L.id, L.name";
 
 include('admin.inc.php');
 
@@ -15,6 +23,14 @@ require(STAFFINC_DIR . 'header.inc.php');
 ?>
 
 <script>
+	function seleccionarLista(){
+		// Obtener el elemento select
+		var selectElement = document.getElementById('lista');
+		// Obtener el valor seleccionado (el ID)
+		var idLista = selectElement.value;
+		alert('ID de la lista seleccionada: ' + idLista);
+	}
+
 	var conteo = 2;
 
 	function agregarOpcion() {
@@ -65,38 +81,30 @@ require(STAFFINC_DIR . 'header.inc.php');
 		window.location.href = 'dictaminacion_admin.php';
 	}
 </script>
-
 <h1>Configuración</h1>
-<p>Este apartado deberá crear las opciones correspondientes para la valoración general de la dictaminación y cuáles deberán ser las que son positivas o negativas para el dictamen.</p>
+<p>Este apartado deberá crear las opciones correspondientes para la valoración general de la dictaminación y cuáles
+	deberán ser las que son positivas o negativas para el dictamen.</p>
 <div id="formulario-1">
+	<label for="lista" class="titulo">Nombre de la lista:</label>
+	</br>
 	<form id="confgForm" class="dynamic-form" action="configuracion_dictamen.php" method="post">
-		<div id="formulario">
-			<label for="lista" class="titulo">Nombre de la lista:<label>
-					</br>
-					<select id="lista" name="lista">
-						<?php
-						while ($listas_nombre = db_fetch_array(db_query($sql_listas))) {
-							$nombre = $listas_nombre['nombre'];
-							$id_lista = $listas_nombre['id'];
-							echo "<option value='$id_lista'>$nombre</option>";
-						}
-						?>
-					</select>
-					<input type="text" id="lista">
-					<br></br>
-					<label for="op1" class="titulo">Opción 1:</label>
-					<input type="text" id="op1">
-					<br>
-					<label for="op2" class="titulo">Opción 2:</label>
-					<input type="text" id="op2">
-		</div>
-		<br></br>
-		<input type="button" value="Agregar Opción" onclick="agregarOpcion()">
-		<input type="button" value="Eliminar Opción" onclick="eliminarOpcion()">
-		<br></br>
-		<input type="button" value="Guardar">
-		<input type="button" value="Cancelar" onclick="volver()">
+
+		<select id="lista" name="lista">
+			<?php
+			$resultado_listas = db_query($sql_listas);
+
+			while ($listas = db_fetch_array($resultado_listas)) {
+				$nombre_lista = $listas['lista_nombre'];
+				$id_lista = $listas['lista_id'];
+				echo "<option id='.$id_lista.' name='$nombre_lista'>" . $nombre_lista . "</option>";
+			}
+			?>
+		</select>
+		<input type="button" value="Seleccionar" onclick="seleccionarLista()">
 	</form>
+	<input type="button" value="Guardar">
+
+	<input type="button" value="Cancelar" onclick="volver()">
 </div>
 
 <?php
