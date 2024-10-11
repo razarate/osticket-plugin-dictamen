@@ -1,14 +1,16 @@
 <?php
 $TABLE_PREFIX = "ostck_";
 $id_lista = 0;
-$sql_prueba = "CREATE TABLE IF NOT EXISTS ost_dictaminacion_listas_positivas(id_positiva INT AUTO_INCREMENT PRIMARY KEY,
-	id_Asignacion INT AUTO_INCREMENT PRIMARY KEY, id_ticket INT NOT NULL, id_staff INT NOT NULL) ENGINE=InnoDB;";
-
-//$sql_listas = "SELECT * FROM " . $TABLE_PREFIX . "list";
-$sql_valores_lista = "SELECT * FROM " . $TABLE_PREFIX . "list_items WHERE list_id = " . $id_lista;
-/* $sql_listas = "SELECT L.name AS lista_nombre, I.value AS item_valor 
-FROM " . $TABLE_PREFIX . "list L
-JOIN " . $TABLE_PREFIX . "list_items I ON L.id = I.list_id"; */
+$sql_prueba = "CREATE TABLE
+    IF NOT EXISTS ost_dictaminacion_opciones (
+        id_opcion INT AUTO_INCREMENT PRIMARY KEY,
+        id_lista INT UNSIGNED NOT NULL,
+        opcion_nombre VARCHAR(255),
+        es_correcta TINYINT (1),
+        CONSTRAINT fk_lista
+        FOREIGN KEY (id_lista) REFERENCES ost_list(id)  -- Relación con ost_list
+        ON DELETE CASCADE 
+    ) ENGINE = InnoDB;";
 
 $sql_listas = "SELECT L.id AS lista_id, L.name AS lista_nombre 
 FROM " . $TABLE_PREFIX . "list L
@@ -19,93 +21,196 @@ include('admin.inc.php');
 
 $nav->setTabActive('manage');
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+	print_r($_POST);
+    if (isset($_POST['lista']) && isset($_POST['respuesta_correcta'])) {
+        $id_lista = intval($_POST['lista']);
+        $respuestas_correctas = $_POST['respuesta_correcta'];
+
+        // Obtener todas las posibles opciones de la base de datos (ajusta la consulta según tu estructura)
+        $sql_opciones = "SELECT opcion_nombre FROM " . $TABLE_PREFIX . "dictaminacion_opciones WHERE id_lista = $id_lista";
+        $result_opciones = db_query($sql_opciones);
+        
+        // Verificar que se obtuvieron opciones
+        if ($result_opciones) {
+            while ($row = db_fetch_array($result_opciones)) {
+                $opcion_nombre = $row['opcion_nombre'];
+                // Determina si la opción está marcada como correcta
+                if (in_array($opcion_nombre, $respuestas_correctas)) {
+                    $es_correcta = 1; // Respuesta correcta
+                } else {
+                    $es_correcta = 0; // Respuesta incorrecta
+                }
+
+                // Escapa el nombre de la opción
+                $opcion_nombre = db_input($opcion_nombre);
+                
+                // Crear la consulta SQL de inserción
+                $sql_insertar = "INSERT INTO " . $TABLE_PREFIX . "dictaminacion_opciones (id_lista, opcion_nombre, es_correcta) 
+                                 VALUES ($id_lista, '$opcion_nombre', $es_correcta) 
+                                 ON DUPLICATE KEY UPDATE es_correcta = $es_correcta";
+
+                // Ejecutar la consulta
+                if (!db_query($sql_insertar)) {
+                    echo "Error al insertar/actualizar opción: " . db_error(); // Mostrar el error
+                }
+            }
+        } else {
+            echo "Error al obtener las opciones de la lista.";
+        }
+    }
+}
+
 require(STAFFINC_DIR . 'header.inc.php');
 ?>
 
 <script>
-	function seleccionarLista(){
-		// Obtener el elemento select
-		var selectElement = document.getElementById('lista');
-		// Obtener el valor seleccionado (el ID)
-		var idLista = selectElement.value;
-		alert('ID de la lista seleccionada: ' + idLista);
-	}
+var idSeleccionado;
+var conteo = 0;
+var maxSeleccionables = 0; // Se establecerá según el número de valores
 
-	var conteo = 2;
+$(document).ready(function() {
+    const select = document.getElementById('lista');
+    idSeleccionado = select.options[0].value; // Toma el valor de la primera opción al cargar
+    select.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        idSeleccionado = selectedOption.value; // Actualiza idSeleccionado cuando cambias la lista
+    });
+});
 
-	function agregarOpcion() {
+function seleccionarLista() {
+    // Obtener la lista seleccionada
+    var select = document.getElementById('lista');
+    var selectedOption = select.options[select.selectedIndex];
+    var idLista = selectedOption.value; // ID de la lista seleccionada
+    var valoresConcatenados = selectedOption.getAttribute('data-valores'); // Obtener los valores concatenados
 
-		if (conteo < 6) {
-			conteo++;
-			var op = 'op' + conteo;
-			var label = document.createElement('label');
-			label.textContent = 'Opción ' + conteo + ': ';
-			label.htmlFor = op;
-			label.id = 'lb' + op;
+    // Limpiar la tabla antes de agregar nuevas filas
+    var tabla = document.getElementById('tablaValores');
+    tabla.innerHTML = ""; // Limpiar las filas de la tabla
 
-			var input = document.createElement('input');
-			input.type = 'text';
-			input.id = op;
+    // 'valoresConcatenados' tiene los valores como una cadena separada por comas
+    var valoresArray = valoresConcatenados.split(',');
+    maxSeleccionables = valoresArray.length - 1; // Permitir seleccionar n-1 checkboxes
 
-			var espacio = document.createElement('br');
-			espacio.id = 'b' + op;
+    // Crear encabezado de la tabla
+    var filaEncabezado = document.createElement('tr');
+    var encabezadoOpcion = document.createElement('th');
+    encabezadoOpcion.textContent = 'Opción';
+    var encabezadoCorrecta = document.createElement('th');
+    encabezadoCorrecta.textContent = 'Respuesta Correcta';
+    filaEncabezado.appendChild(encabezadoOpcion);
+    filaEncabezado.appendChild(encabezadoCorrecta);
+    tabla.appendChild(filaEncabezado);
 
-			var contenedor = document.getElementById('formulario');
-			var lastElement = contenedor.lastElementChild;
-			contenedor.insertBefore(input, lastElement.nextSibling);
-			contenedor.insertBefore(label, lastElement.nextSibling);
-			contenedor.insertBefore(espacio, lastElement.nextSibling);
-		}
-	}
+    // Iterar por cada valor y agregar una fila a la tabla
+    valoresArray.forEach(function(valor, index) {
+        var fila = document.createElement('tr');
 
-	function eliminarOpcion() {
-		if (conteo > 2) {
-			var op = 'op' + conteo;
-			var espacio = document.getElementById('b' + op);
-			var elementoInput = document.getElementById(op);
-			var elementoLabel = document.getElementById('lb' + op);
+        // Columna de Opción (valor)
+        var celdaValor = document.createElement('td');
+        celdaValor.textContent = valor;
+        fila.appendChild(celdaValor);
 
-			elementoLabel.remove();
-			elementoInput.remove();
-			espacio.remove();
-			/*var ultimoInput = ultimoElemento.lastElementChild.previousElementSibling;
-			var ultimoLabel = ultimoInput.previousElementSibling;
-			
-			contenedor.removeChild(utlimoLabel);
-			contenedor.removeChild(ultimoInput);*/
-			conteo--;
-		}
-	}
+        // Columna de Respuesta Correcta (checkbox)
+        var celdaCheckbox = document.createElement('td');
+        var checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.name = 'respuesta_correcta[]'; // Nombre para los checkboxes
+        checkbox.value = valor; // Asignar el valor al checkbox
 
-	function volver() {
-		window.location.href = 'dictaminacion_admin.php';
-	}
+        // Añadir evento para limitar el número de checkboxes seleccionables
+        checkbox.addEventListener('change', verificarSeleccion);
+
+        celdaCheckbox.appendChild(checkbox);
+        fila.appendChild(celdaCheckbox);
+
+        // Agregar la fila a la tabla
+        tabla.appendChild(fila);
+    });
+}
+
+function verificarSeleccion() {
+    // Obtener todos los checkboxes
+    var checkboxes = document.querySelectorAll('input[type="checkbox"][name="respuesta_correcta[]"]');
+
+    // Contar cuántos están seleccionados
+    var seleccionados = Array.from(checkboxes).filter(checkbox => checkbox.checked).length;
+
+    // Si el número de seleccionados alcanza el máximo permitido, deshabilitar los checkboxes no seleccionados
+    checkboxes.forEach(function(checkbox) {
+        if (seleccionados >= maxSeleccionables) {
+            // Deshabilitar checkboxes que no están seleccionados
+            if (!checkbox.checked) {
+                checkbox.disabled = true;
+            }
+        } else {
+            // Habilitar todos los checkboxes si aún no se ha alcanzado el límite
+            checkbox.disabled = false;
+        }
+    });
+}
+
+// Validar que al menos un checkbox esté seleccionado antes de enviar el formulario
+function validarSeleccion(event) {
+    var checkboxes = document.querySelectorAll('input[type="checkbox"][name="respuesta_correcta[]"]');
+    var seleccionados = Array.from(checkboxes).filter(checkbox => checkbox.checked).length;
+
+    // Si no hay ningún checkbox seleccionado, bloquear el envío
+    if (seleccionados === 0) {
+        event.preventDefault(); // Evita que el formulario se envíe
+    }
+}
+
+function volver() {
+    window.location.href = 'dictaminacion_admin.php';
+}
 </script>
+
 <h1>Configuración</h1>
 <p>Este apartado deberá crear las opciones correspondientes para la valoración general de la dictaminación y cuáles
-	deberán ser las que son positivas o negativas para el dictamen.</p>
-<div id="formulario-1">
-	<label for="lista" class="titulo">Nombre de la lista:</label>
-	</br>
-	<form id="confgForm" class="dynamic-form" action="configuracion_dictamen.php" method="post">
-
-		<select id="lista" name="lista">
-			<?php
+    deberán ser las que son positivas o negativas para el dictamen.</p>
+<div id="formulario">
+    <label for="lista" class="titulo">Nombre de la lista:</label>
+    </br>
+    <form id="confgForm" class="dynamic-form" action="configuracion_dictamen.php" method="post"
+        onsubmit="validarSeleccion(event)">
+        <?php csrf_token(); ?>
+        <select id="lista" name="lista">
+            <?php
 			$resultado_listas = db_query($sql_listas);
 
 			while ($listas = db_fetch_array($resultado_listas)) {
 				$nombre_lista = $listas['lista_nombre'];
 				$id_lista = $listas['lista_id'];
-				echo "<option id='.$id_lista.' name='$nombre_lista'>" . $nombre_lista . "</option>";
+				// Consulta los elementos de la lista seleccionada
+				$sql_valores_lista = "SELECT value FROM " . $TABLE_PREFIX . "list_items WHERE list_id = " . $id_lista;
+				$resultado_valores = db_query($sql_valores_lista);
+
+				// Concatenar los valores de los elementos de la lista en una cadena
+				$valores = [];
+				while ($elemento = db_fetch_array($resultado_valores)) {
+					$valores[] = $elemento['value'];
+				}
+				$valores_concatenados = implode(',', $valores); // Concatenar valores con comas
+
+				// Generar la opción con el nombre de la lista, usando 'data-valores' para almacenar los valores
+				echo "<option value='$id_lista' data-valores='$valores_concatenados'>" . $nombre_lista . "</option>";
 			}
 			?>
-		</select>
-		<input type="button" value="Seleccionar" onclick="seleccionarLista()">
-	</form>
-	<input type="button" value="Guardar">
+        </select>
 
-	<input type="button" value="Cancelar" onclick="volver()">
+        <input type="button" value="Seleccionar" onclick="seleccionarLista()">
+
+        <!-- Aquí irán los checkboxes -->
+        <table id="tablaValores" border="1" style="margin-top: 20px;"></table>
+
+        <!-- Botón de Guardar -->
+        <input type="submit" value="Guardar">
+        <input type="button" value="Cancelar" onclick="volver()">
+    </form>
 </div>
+
 
 <?php
 include(STAFFINC_DIR . 'footer.inc.php');
