@@ -22,44 +22,45 @@ include('admin.inc.php');
 $nav->setTabActive('manage');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-	print_r($_POST);
+    print_r($_POST);
     if (isset($_POST['lista']) && isset($_POST['respuesta_correcta'])) {
         $id_lista = intval($_POST['lista']);
-        $respuestas_correctas = $_POST['respuesta_correcta'];
+        $respuestas_correctas = $_POST['respuesta_correcta']; // Solo las respuestas seleccionadas
 
-        // Obtener todas las posibles opciones de la base de datos (ajusta la consulta según tu estructura)
+        // Obtener todas las posibles opciones de la base de datos
         $sql_opciones = "SELECT opcion_nombre FROM " . $TABLE_PREFIX . "dictaminacion_opciones WHERE id_lista = $id_lista";
         $result_opciones = db_query($sql_opciones);
-        
-        // Verificar que se obtuvieron opciones
-        if ($result_opciones) {
-            while ($row = db_fetch_array($result_opciones)) {
-                $opcion_nombre = $row['opcion_nombre'];
-                // Determina si la opción está marcada como correcta
-                if (in_array($opcion_nombre, $respuestas_correctas)) {
-                    $es_correcta = 1; // Respuesta correcta
-                } else {
-                    $es_correcta = 0; // Respuesta incorrecta
-                }
 
-                // Escapa el nombre de la opción
-                $opcion_nombre = db_input($opcion_nombre);
-                
-                // Crear la consulta SQL de inserción
-                $sql_insertar = "INSERT INTO " . $TABLE_PREFIX . "dictaminacion_opciones (id_lista, opcion_nombre, es_correcta) 
-                                 VALUES ($id_lista, '$opcion_nombre', $es_correcta) 
-                                 ON DUPLICATE KEY UPDATE es_correcta = $es_correcta";
-
-                // Ejecutar la consulta
-                if (!db_query($sql_insertar)) {
-                    echo "Error al insertar/actualizar opción: " . db_error(); // Mostrar el error
-                }
-            }
-        } else {
-            echo "Error al obtener las opciones de la lista.";
+        // Crear un array para almacenar todas las opciones existentes
+        $todas_opciones = [];
+        while ($row = db_fetch_array($result_opciones)) {
+            $todas_opciones[] = $row['opcion_nombre'];
         }
+
+        // Insertar o actualizar solo las opciones seleccionadas
+        foreach ($respuestas_correctas as $opcion_nombre) {
+            // Verificar si la opción ya existe
+            if (!in_array($opcion_nombre, $todas_opciones)) {
+                // Si no existe, insertamos una nueva opción
+                $sql_insertar = "INSERT INTO " . $TABLE_PREFIX . "dictaminacion_opciones (id_lista, opcion_nombre, es_correcta) 
+                                 VALUES ($id_lista, '$opcion_nombre', 1)";
+                db_query($sql_insertar);
+            } else {
+                // Si ya existe, actualizamos el estado de es_correcta
+                $sql_actualizar = "UPDATE " . $TABLE_PREFIX . "dictaminacion_opciones 
+                                   SET es_correcta = 1 
+                                   WHERE id_lista = $id_lista AND opcion_nombre = '$opcion_nombre'";
+                db_query($sql_actualizar);
+            }
+        }
+
+        // Eliminar las opciones que no están en las respuestas correctas
+        $sql_eliminar = "DELETE FROM " . $TABLE_PREFIX . "dictaminacion_opciones 
+                         WHERE id_lista = $id_lista AND opcion_nombre NOT IN ('" . implode("', '", $respuestas_correctas) . "')";
+        db_query($sql_eliminar);
     }
 }
+
 
 require(STAFFINC_DIR . 'header.inc.php');
 ?>
