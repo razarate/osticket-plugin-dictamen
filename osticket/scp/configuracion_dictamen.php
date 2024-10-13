@@ -21,6 +21,9 @@ include('admin.inc.php');
 
 $nav->setTabActive('manage');
 
+$lista_seleccionada = null;  // Inicializar variable para mostrar la lista seleccionada
+$opciones_seleccionadas = [];  // Inicializar array para mostrar las opciones seleccionadas
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     print_r($_POST);
     if (isset($_POST['lista']) && isset($_POST['respuesta_correcta'])) {
@@ -58,10 +61,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql_eliminar = "DELETE FROM " . $TABLE_PREFIX . "dictaminacion_opciones 
                          WHERE id_lista = $id_lista AND opcion_nombre NOT IN ('" . implode("', '", $respuestas_correctas) . "')";
         db_query($sql_eliminar);
+
+        // Guardar la lista y las opciones seleccionadas para mostrarlas
+        $lista_seleccionada = $id_lista;
+        $opciones_seleccionadas = $respuestas_correctas;
     }
 }
-
-
 require(STAFFINC_DIR . 'header.inc.php');
 ?>
 
@@ -173,32 +178,35 @@ function volver() {
     deberán ser las que son positivas o negativas para el dictamen.</p>
 <div id="formulario">
     <label for="lista" class="titulo">Nombre de la lista:</label>
-    </br>
+    <br>
+
+    <?php if ($lista_seleccionada === null): ?>
+    <!-- Mostrar el formulario de selección cuando no se ha hecho el POST -->
     <form id="confgForm" class="dynamic-form" action="configuracion_dictamen.php" method="post"
         onsubmit="validarSeleccion(event)">
         <?php csrf_token(); ?>
         <select id="lista" name="lista">
             <?php
-			$resultado_listas = db_query($sql_listas);
+                $resultado_listas = db_query($sql_listas);
 
-			while ($listas = db_fetch_array($resultado_listas)) {
-				$nombre_lista = $listas['lista_nombre'];
-				$id_lista = $listas['lista_id'];
-				// Consulta los elementos de la lista seleccionada
-				$sql_valores_lista = "SELECT value FROM " . $TABLE_PREFIX . "list_items WHERE list_id = " . $id_lista;
-				$resultado_valores = db_query($sql_valores_lista);
+                while ($listas = db_fetch_array($resultado_listas)) {
+                    $nombre_lista = $listas['lista_nombre'];
+                    $id_lista = $listas['lista_id'];
+                    // Consulta los elementos de la lista seleccionada
+                    $sql_valores_lista = "SELECT value FROM " . $TABLE_PREFIX . "list_items WHERE list_id = " . $id_lista;
+                    $resultado_valores = db_query($sql_valores_lista);
 
-				// Concatenar los valores de los elementos de la lista en una cadena
-				$valores = [];
-				while ($elemento = db_fetch_array($resultado_valores)) {
-					$valores[] = $elemento['value'];
-				}
-				$valores_concatenados = implode(',', $valores); // Concatenar valores con comas
+                    // Concatenar los valores de los elementos de la lista en una cadena
+                    $valores = [];
+                    while ($elemento = db_fetch_array($resultado_valores)) {
+                        $valores[] = $elemento['value'];
+                    }
+                    $valores_concatenados = implode(',', $valores); // Concatenar valores con comas
 
-				// Generar la opción con el nombre de la lista, usando 'data-valores' para almacenar los valores
-				echo "<option value='$id_lista' data-valores='$valores_concatenados'>" . $nombre_lista . "</option>";
-			}
-			?>
+                    // Generar la opción con el nombre de la lista, usando 'data-valores' para almacenar los valores
+                    echo "<option value='$id_lista' data-valores='$valores_concatenados'>" . $nombre_lista . "</option>";
+                }
+                ?>
         </select>
 
         <input type="button" value="Seleccionar" onclick="seleccionarLista()">
@@ -210,7 +218,35 @@ function volver() {
         <input type="submit" value="Guardar">
         <input type="button" value="Cancelar" onclick="volver()">
     </form>
+
+    <?php else: ?>
+    <!-- Mostrar los datos seleccionados después del POST -->
+    <p>Lista seleccionada: <strong>
+            <?php
+                $sql_lista_nombre = "SELECT name FROM " . $TABLE_PREFIX . "list WHERE id = " . $lista_seleccionada;
+                $nombre_lista = db_fetch_array(db_query($sql_lista_nombre))['name'];
+                echo $nombre_lista;
+                ?>
+        </strong></p>
+
+    <table id="tablaValores" border="1" style="margin-top: 20px;">
+        <tr>
+            <th>Opción</th>
+            <th>Respuesta Correcta</th>
+        </tr>
+        <?php foreach ($opciones_seleccionadas as $opcion): ?>
+        <tr>
+            <td><?php echo htmlspecialchars($opcion); ?></td>
+            <td>✔</td>
+        </tr>
+        <?php endforeach; ?>
+    </table>
+
+    <!-- Botón para volver -->
+    <input type="button" value="Volver" onclick="volver()">
+    <?php endif; ?>
 </div>
+
 
 
 <?php
