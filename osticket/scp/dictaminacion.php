@@ -12,12 +12,42 @@ global $agent_id;
 
 $sql = "SELECT t.ticket_id, t.number FROM " . $TABLE_PREFIX . "ticket t WHERE t.ticket_id IN (SELECT da.id_ticket FROM "  . $TABLE_PREFIX . "dictaminacion_asignaciones da WHERE da.id_staff ='$agent_id')";
 $res = db_query($sql);
+$sql_opcionesAsignadas = db_query("SELECT * FROM " . $TABLE_PREFIX . "dictaminacion_opciones");
+
+$form_titulo = 'Dictaminación';
+$sql_idForm = "SELECT * FROM " . $TABLE_PREFIX . "form WHERE title = '$form_titulo'";
+$res_formulario = db_query($sql_idForm);
+
+$error = '';
+$ir_formulario = false;
+//verificar si hay registros
+if(db_num_rows($sql_opcionesAsignadas) == 0){
+	$error = 'Parece que el administrador no ha configurado el formulario de dictaminación correctamente. Verifique que haya seleccionado las opciones de la valoración global';
+}
+
+if(db_num_rows($res_formulario) == 0){
+	$error = 'Parece que el administrador no ha configurado el formulario de dictaminación correctamente. Verifique que esté nombrado como Dictaminación';
+}elseif(db_num_rows($res_formulario) > 2){
+	$error = 'Parece que el administrador no ha configurado el formulario de dictaminación correctamente. Verifique que no haya duplicidad en el nombre de Dictaminación';
+}
+
+if (db_num_rows($sql_opcionesAsignadas) > 0 && db_num_rows($res_formulario) == 1) {
+	$ir_formulario = true;
+}
+
+
 
 ?>
 
 <script src="jspdf.umd.min.js"></script>
 <script src="jspdf.plugin.autotable.min.js"></script>
 <script>
+	
+	function mostrarAlerta(error){
+		alert(error);
+		window.location.href = 'dictaminacion.php';
+	}
+
 	async function generarPdf(preguntas_json, ticket_number) {
 		let preguntas = preguntas_json;
 		const {
@@ -133,7 +163,11 @@ if (db_num_rows($res) > 0) {
 				$sql_estado = "SELECT * FROM " . $TABLE_PREFIX . "dictaminacion WHERE id_staff = $agent_id AND id_ticket = $ticket_id AND id_estado=1";
 				$estado = db_query($sql_estado);
 				echo "<tr>";
-				echo "<td><a href='formulario_dictamen.php?id=" . $ticket_id . "'>#" . $ticket_number . "</a></td>";
+				if ($ir_formulario) {
+					echo "<td><a href='formulario_dictamen.php?id=" . $ticket_id . "'>#" . $ticket_number . "</a></td>";
+				} else {
+					echo "<td><span style='color: blue; text-decoration: underline; cursor: pointer;' onclick='mostrarAlerta(\"$error\")'>#$ticket_number</span></td>";
+				}
 				if (db_num_rows($estado) == 1) {
 					echo "<td>Evaluado</td>";
 					echo "<td><input type='button' value='PDF' onclick='generarPdf($preguntas_json, $ticket_number)'></td>";

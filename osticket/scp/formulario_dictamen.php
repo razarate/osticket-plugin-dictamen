@@ -26,10 +26,10 @@ while ($fila = db_fetch_array($sql_nomCorrect)) {
 }
 
 //verificar si hay registros
-if(db_num_rows($sql_opcionesAsignadas) > 0){
+if (db_num_rows($sql_opcionesAsignadas) > 0) {
     $row = db_fetch_array($sql_idLista);  // Obtiene el primer registro de la consulta
     $idListaAsignada = $row['id_lista'];
-    $sql_nombreLista = db_query("SELECT name FROM " . $TABLE_PREFIX . "list WHERE id=".$idListaAsignada);
+    $sql_nombreLista = db_query("SELECT name FROM " . $TABLE_PREFIX . "list WHERE id=" . $idListaAsignada);
     $row = db_fetch_array($sql_nombreLista);  // Obtiene el primer registro de la consulta
     $nombreListaAsignada = $row['name'];
 }
@@ -60,7 +60,7 @@ if ($id_form = db_fetch_array($res_formulario)) {
             foreach ($_POST as $key => $value) {
                 $pregunta_id = htmlspecialchars($key);
                 $respuesta = htmlspecialchars($value);
-                
+
                 if (in_array($respuesta, $opciones_correctas)) {
                     $valoracion = 1;
                 } else {
@@ -93,34 +93,30 @@ if ($id_form = db_fetch_array($res_formulario)) {
     $sql_estado = "SELECT * FROM " . $TABLE_PREFIX . "dictaminacion WHERE id_ticket=$ticket_id AND id_staff=$staff_id AND id_estado=1";
     $estado = db_query($sql_estado);
     $estatus = db_num_rows($estado) == 1;
-} else {
-    echo "<script>alert('Parece que su formulario de dictaminación está nombrado incorrectamente. Verifique que esté nombrado como Dictaminación o dictaminación');
-	window.location.href = 'dictaminacion.php';
-	</script>";
 }
 
 ?>
 
 <style>
-.dynamic-form .form-group {
-    margin-bottom: 15px;
-}
+    .dynamic-form .form-group {
+        margin-bottom: 15px;
+    }
 
-.dynamic-form label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
+    .dynamic-form label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
 </style>
 
 <script>
-function volver() {
-    window.location.href = 'dictaminacion.php';
-}
+    function volver() {
+        window.location.href = 'dictaminacion.php';
+    }
 
-/*function confirmarEnvio() {
-    return confirm("¿Está seguro de guardar? No se podrán efectuar cambios una vez realizada la operación.");
-}*/
+    /*function confirmarEnvio() {
+        return confirm("¿Está seguro de guardar? No se podrán efectuar cambios una vez realizada la operación.");
+    }*/
 </script>
 
 <form class="dynamic-form" method="post">
@@ -137,11 +133,14 @@ function volver() {
 
         echo "<tr>";
 
-        if ($fila['type'] == 'list-2') {
+        if (strpos($fila['type'], 'list-') === 0) {
+            // Aquí extraes el ID de la lista directamente del nombre, después de 'list-'
+            $list_id = intval(str_replace('list-', '', $fila['type']));
             echo "<td><label for=" . $pregunta_nombre . ">" . $pregunta . "</label></td>";
             echo "<td>";
             echo "<select id=" . $pregunta_nombre . " name=" . $pregunta_nombre . ">";
-            $list_id = 2;
+
+            // Ahora usas $list_id dinámicamente
             $sql_listas = "SELECT * FROM " . $TABLE_PREFIX . "list_items WHERE list_id = $list_id";
             $opciones = db_query($sql_listas);
 
@@ -181,45 +180,48 @@ function volver() {
                     </script>";
                 }
             }
-        } elseif ($fila['type'] != 'info') {
-            echo "<td><label for=" . $nombreListaAsignada . ">Valoración Global </label></td>";
-            echo "<td>";
-            echo "<select id=" . $nombreListaAsignada . " name=" . $nombreListaAsignada . ">";
-            $sql_listas = "SELECT * FROM " . $TABLE_PREFIX . "list_items WHERE list_id = $idListaAsignada";
-            $opciones = db_query($sql_listas);
-
-            while ($row = db_fetch_array($opciones)) {
-                $opcion = $row['value'];
-                $opcion_val = $row['extra'] ? $row['extra'] : $row['value'];
-                echo "<option value=" . $opcion . ">" . $opcion_val . "</option>";
-            }
-
-            if ($estatus) {
-                $sql_opciones = "SELECT respuesta FROM " . $TABLE_PREFIX . "dictaminacion_respuestas WHERE id_ticket=$ticket_id AND id_staff=$staff_id AND pregunta='$nombreListaAsignada'";
-                $opcion_seleccionada = db_query($sql_opciones);
-                if ($resultante = db_fetch_array($opcion_seleccionada)) {
-                    $claro = $resultante['respuesta'];
-                    echo "<script>
-                    document.getElementById('$nombreListaAsignada').value = '$claro';
-                    document.getElementById('$nombreListaAsignada').disabled = true;
-                    </script>";
-                }
-            }
-
-            echo "</select></br></br>";
+        } elseif ($fila['type'] == 'info') {
+            echo "<td><label>" . $pregunta . "</label></td>";
         }
 
         echo "</td>";
         echo "</tr>";
     }
+    echo "<tr>";
+    echo "<td><label for=" . $nombreListaAsignada . ">Valoración Global </label></td>";
+    echo "<td>";
+    echo "<select id=" . $nombreListaAsignada . " name=" . $nombreListaAsignada . ">";
+    $sql_listas = "SELECT * FROM " . $TABLE_PREFIX . "list_items WHERE list_id = $idListaAsignada";
+    $opciones = db_query($sql_listas);
 
+    while ($row = db_fetch_array($opciones)) {
+        $opcion = $row['value'];
+        $opcion_val = $row['extra'] ? $row['extra'] : $row['value'];
+        echo "<option value=" . $opcion . ">" . $opcion_val . "</option>";
+    }
+
+    if ($estatus) {
+        $sql_opciones = "SELECT respuesta FROM " . $TABLE_PREFIX . "dictaminacion_respuestas WHERE id_ticket=$ticket_id AND id_staff=$staff_id AND pregunta='$nombreListaAsignada'";
+        $opcion_seleccionada = db_query($sql_opciones);
+        if ($resultante = db_fetch_array($opcion_seleccionada)) {
+            $claro = $resultante['respuesta'];
+            echo "<script>
+                    document.getElementById('$nombreListaAsignada').value = '$claro';
+                    document.getElementById('$nombreListaAsignada').disabled = true;
+                    </script>";
+        }
+    }
+
+    echo "</select></br></br>";
+    echo "</td>";
+    echo "</tr>";
     echo "</table>";
 
     if ($estatus) { ?>
-    <input type="button" value="Volver" onclick="volver()">
+        <input type="button" value="Volver" onclick="volver()">
     <?php } else { ?>
-    <input type="submit" value="Guardar">
-    <input type="button" value="Cancelar" onclick="volver()">
+        <input type="submit" value="Guardar">
+        <input type="button" value="Cancelar" onclick="volver()">
     <?php } ?>
 </form>
 <?php
