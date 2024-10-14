@@ -14,6 +14,26 @@ include('staff.inc.php');
 $nav->setTabActive('dictaminacions');
 require_once(STAFFINC_DIR . 'header.inc.php');
 
+$sql_opcionesAsignadas = db_query("SELECT * FROM " . $TABLE_PREFIX . "dictaminacion_opciones");
+$sql_idLista = db_query("SELECT DISTINCT id_lista FROM " . $TABLE_PREFIX . "dictaminacion_opciones WHERE es_correcta=1");
+$opcionesAsignadas = [];
+$idListaAsignada;
+
+$sql_nomCorrect = db_query("SELECT opcion_nombre FROM " . $TABLE_PREFIX . "dictaminacion_opciones WHERE es_correcta=1");
+$opciones_correctas = [];
+while ($fila = db_fetch_array($sql_nomCorrect)) {
+    $opciones_correctas[] = $fila['opcion_nombre'];  // Almacena las opciones correctas en un array
+}
+
+//verificar si hay registros
+if(db_num_rows($sql_opcionesAsignadas) > 0){
+    $row = db_fetch_array($sql_idLista);  // Obtiene el primer registro de la consulta
+    $idListaAsignada = $row['id_lista'];
+    $sql_nombreLista = db_query("SELECT name FROM " . $TABLE_PREFIX . "list WHERE id=".$idListaAsignada);
+    $row = db_fetch_array($sql_nombreLista);  // Obtiene el primer registro de la consulta
+    $nombreListaAsignada = $row['name'];
+}
+
 $estatus = false;
 $staff_id = $thisstaff->getId();
 
@@ -40,11 +60,13 @@ if ($id_form = db_fetch_array($res_formulario)) {
             foreach ($_POST as $key => $value) {
                 $pregunta_id = htmlspecialchars($key);
                 $respuesta = htmlspecialchars($value);
-                if ($respuesta == 'Correcto') {
+                
+                if (in_array($respuesta, $opciones_correctas)) {
                     $valoracion = 1;
-                } elseif ($respuesta == 'Incorrecto') {
+                } else {
                     $valoracion = 0;
                 }
+
                 if ($pregunta_id != 'ticket_id' && $pregunta_id != '__CSRFToken__') {
                     $pregunta_label = isset($preguntas_labels[$pregunta_id]) ? $preguntas_labels[$pregunta_id] : '';
                     $stmt_respuesta = db_query("INSERT INTO " . $TABLE_PREFIX . "dictaminacion_respuestas (id_staff, id_ticket, pregunta, pregunta_label, respuesta) VALUES ($staff_id, $ticket_id, '$pregunta_id', '$pregunta_label', '$respuesta')");
@@ -114,9 +136,9 @@ function volver() {
         $pregunta_nombre = $fila['name'];
 
         echo "<tr>";
-        echo "<td><label for=" . $pregunta_nombre . ">" . $pregunta . "</label></td>";
 
         if ($fila['type'] == 'list-2') {
+            echo "<td><label for=" . $pregunta_nombre . ">" . $pregunta . "</label></td>";
             echo "<td>";
             echo "<select id=" . $pregunta_nombre . " name=" . $pregunta_nombre . ">";
             $list_id = 2;
@@ -143,6 +165,7 @@ function volver() {
 
             echo "</select></br></br>";
         } elseif ($fila['type'] == 'memo') {
+            echo "<td><label for=" . $pregunta_nombre . ">" . $pregunta . "</label></td>";
             echo "<td>";
             echo "<textarea id=" . $pregunta_nombre . " name=" . $pregunta_nombre . " rows ='10' cols='50'></textarea>";
 
@@ -158,11 +181,11 @@ function volver() {
                     </script>";
                 }
             }
-        } elseif ($fila['type'] == 'list-3') {
+        } elseif ($fila['type'] != 'info') {
+            echo "<td><label for=" . $nombreListaAsignada . ">Valoración Global </label></td>";
             echo "<td>";
-            echo "<select id=" . $pregunta_nombre . " name=" . $pregunta_nombre . ">";
-            $list_id = 3;
-            $sql_listas = "SELECT * FROM " . $TABLE_PREFIX . "list_items WHERE list_id = $list_id";
+            echo "<select id=" . $nombreListaAsignada . " name=" . $nombreListaAsignada . ">";
+            $sql_listas = "SELECT * FROM " . $TABLE_PREFIX . "list_items WHERE list_id = $idListaAsignada";
             $opciones = db_query($sql_listas);
 
             while ($row = db_fetch_array($opciones)) {
@@ -172,13 +195,13 @@ function volver() {
             }
 
             if ($estatus) {
-                $sql_opciones = "SELECT respuesta FROM " . $TABLE_PREFIX . "dictaminacion_respuestas WHERE id_ticket=$ticket_id AND id_staff=$staff_id AND pregunta='$pregunta_nombre'";
+                $sql_opciones = "SELECT respuesta FROM " . $TABLE_PREFIX . "dictaminacion_respuestas WHERE id_ticket=$ticket_id AND id_staff=$staff_id AND pregunta='$nombreListaAsignada'";
                 $opcion_seleccionada = db_query($sql_opciones);
                 if ($resultante = db_fetch_array($opcion_seleccionada)) {
                     $claro = $resultante['respuesta'];
                     echo "<script>
-                    document.getElementById('$pregunta_nombre').value = '$claro';
-                    document.getElementById('$pregunta_nombre').disabled = true;
+                    document.getElementById('$nombreListaAsignada').value = '$claro';
+                    document.getElementById('$nombreListaAsignada').disabled = true;
                     </script>";
                 }
             }
