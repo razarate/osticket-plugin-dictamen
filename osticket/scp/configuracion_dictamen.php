@@ -24,6 +24,23 @@ $nav->setTabActive('manage');
 $lista_seleccionada = null;  // Inicializar variable para mostrar la lista seleccionada
 $opciones_seleccionadas = [];  // Inicializar array para mostrar las opciones seleccionadas
 
+// Verificar si hay registros en la tabla dictaminacion_opciones
+$sql_check_records = "SELECT id_lista FROM " . $TABLE_PREFIX . "dictaminacion_opciones LIMIT 1";
+$result_check_records = db_query($sql_check_records);
+if (db_num_rows($result_check_records) > 0) {
+    // Si hay registros, seleccionar la lista correspondiente
+    $lista_seleccionada = db_fetch_array($result_check_records)['id_lista'];
+    $sql_lista_nombre = "SELECT name FROM " . $TABLE_PREFIX . "list WHERE id = " . $lista_seleccionada;
+    $nombre_lista = db_fetch_array(db_query($sql_lista_nombre))['name'];
+    
+    // Obtener las opciones correctas para la lista seleccionada
+    $sql_opciones = "SELECT opcion_nombre FROM " . $TABLE_PREFIX . "dictaminacion_opciones WHERE id_lista = " . $lista_seleccionada;
+    $result_opciones = db_query($sql_opciones);
+    while ($row = db_fetch_array($result_opciones)) {
+        $opciones_seleccionadas[] = $row['opcion_nombre'];
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     print_r($_POST);
     if (isset($_POST['lista']) && isset($_POST['respuesta_correcta'])) {
@@ -67,6 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $opciones_seleccionadas = $respuestas_correctas;
     }
 }
+
 require(STAFFINC_DIR . 'header.inc.php');
 ?>
 
@@ -182,7 +200,7 @@ function volver() {
 
     <?php if ($lista_seleccionada === null): ?>
     <!-- Mostrar el formulario de selección cuando no se ha hecho el POST -->
-    <form id="confgForm" class="dynamic-form" action="configuracion_dictamen.php" method="post"
+    <form id="confgForm" class="dynamic-form" action=" configuracion_dictamen.php" method="post"
         onsubmit="validarSeleccion(event)">
         <?php csrf_token(); ?>
         <select id="lista" name="lista">
@@ -246,8 +264,6 @@ function volver() {
     <input type="button" value="Volver" onclick="volver()">
     <?php endif; ?>
 </div>
-
-
 
 <?php
 include(STAFFINC_DIR . 'footer.inc.php');
