@@ -69,6 +69,9 @@ if ($id_form = db_fetch_array($res_formulario)) {
 
                 if ($pregunta_id != 'ticket_id' && $pregunta_id != '__CSRFToken__') {
                     $pregunta_label = isset($preguntas_labels[$pregunta_id]) ? $preguntas_labels[$pregunta_id] : '';
+                    if($pregunta_label == ''){
+                        $pregunta_label = 'Valoración Global';
+                    }
                     $stmt_respuesta = db_query("INSERT INTO " . $TABLE_PREFIX . "dictaminacion_respuestas (id_staff, id_ticket, pregunta, pregunta_label, respuesta) VALUES ($staff_id, $ticket_id, '$pregunta_id', '$pregunta_label', '$respuesta')");
                 }
             }
@@ -188,7 +191,7 @@ if ($id_form = db_fetch_array($res_formulario)) {
         echo "</tr>";
     }
     echo "<tr>";
-    echo "<td><label for=" . $nombreListaAsignada . ">Valoración Global </label></td>";
+    echo "<td><label for=" . $nombreListaAsignada . ">Valoración Global</label></td>";
     echo "<td>";
     echo "<select id=" . $nombreListaAsignada . " name=" . $nombreListaAsignada . ">";
     $sql_listas = "SELECT * FROM " . $TABLE_PREFIX . "list_items WHERE list_id = $idListaAsignada";

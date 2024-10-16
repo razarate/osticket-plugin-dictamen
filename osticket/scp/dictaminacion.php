@@ -21,18 +21,20 @@ $res_formulario = db_query($sql_idForm);
 $error = '';
 $ir_formulario = false;
 //verificar si hay registros
-if(db_num_rows($sql_opcionesAsignadas) == 0){
+if (db_num_rows($sql_opcionesAsignadas) == 0) {
 	$error = 'Parece que el administrador no ha configurado el formulario de dictaminación correctamente. Verifique que haya seleccionado las opciones de la valoración global';
 }
 
-if(db_num_rows($res_formulario) == 0){
+if (db_num_rows($res_formulario) == 0) {
 	$error = 'Parece que el administrador no ha configurado el formulario de dictaminación correctamente. Verifique que esté nombrado como Dictaminación';
-}elseif(db_num_rows($res_formulario) > 2){
+} elseif (db_num_rows($res_formulario) > 2) {
 	$error = 'Parece que el administrador no ha configurado el formulario de dictaminación correctamente. Verifique que no haya duplicidad en el nombre de Dictaminación';
 }
 
-if (db_num_rows($sql_opcionesAsignadas) > 0 && db_num_rows($res_formulario) == 1) {
+if (db_num_rows($sql_opcionesAsignadas) > 0 || db_num_rows($res_formulario) == 1) {
 	$ir_formulario = true;
+} else {
+	$ir_formulario = false;
 }
 
 
@@ -42,92 +44,98 @@ if (db_num_rows($sql_opcionesAsignadas) > 0 && db_num_rows($res_formulario) == 1
 <script src="jspdf.umd.min.js"></script>
 <script src="jspdf.plugin.autotable.min.js"></script>
 <script>
-	
-	function mostrarAlerta(error){
-		alert(error);
-		window.location.href = 'dictaminacion.php';
-	}
+function mostrarAlerta(error) {
+    alert(error);
+    window.location.href = 'dictaminacion.php';
+}
 
-	async function generarPdf(preguntas_json, ticket_number) {
-		let preguntas = preguntas_json;
-		const {
-			jsPDF
-		} = window.jspdf;
+async function generarPdf(preguntas_json, ticket_number) {
+    let preguntas = preguntas_json;
+    const {
+        jsPDF
+    } = window.jspdf;
 
-		const doc = new jsPDF({
-			orientation: 'landscape',
-			unit: 'mm',
-			format: 'a4'
-		});
-		doc.setFontSize(20);
+    const doc = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+    });
+    doc.setFontSize(20);
 
-		const pageWidth = doc.internal.pageSize.getWidth();
-		const pageHeight = doc.internal.pageSize.getHeight();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
 
-		const titulo1 = "BENEMÉRITA ESCUELA NORMAL VERACRUZANA ENRIQUE C. RÉBSAMEN.";
-		const titulo2 = "OFICINA DE INNOVACIÓN EDUCATIVA";
+    const titulo1 = "BENEMÉRITA ESCUELA NORMAL VERACRUZANA ENRIQUE C. RÉBSAMEN.";
+    const titulo2 = "OFICINA DE INNOVACIÓN EDUCATIVA";
 
-		const titulo1Width = doc.getTextWidth(titulo1);
-		const titulo2Width = doc.getTextWidth(titulo2);
+    const titulo1Width = doc.getTextWidth(titulo1);
+    const titulo2Width = doc.getTextWidth(titulo2);
 
-		const titulo1X = (pageWidth - titulo1Width) / 2;
-		const titulo2X = (pageWidth - titulo2Width) / 2;
+    const titulo1X = (pageWidth - titulo1Width) / 2;
+    const titulo2X = (pageWidth - titulo2Width) / 2;
 
-		doc.text(titulo1, titulo1X, 20);
-		doc.text(titulo2, titulo2X, 30);
+    doc.text(titulo1, titulo1X, 20);
+    doc.text(titulo2, titulo2X, 30);
 
-		doc.setFontSize(18);
-		const nombreTicket = "Evaluación del ticket #" + ticket_number;
+    doc.setFontSize(18);
+    const nombreTicket = "Evaluación del ticket #" + ticket_number;
 
-		doc.text(nombreTicket, 15, 45);
+    doc.text(nombreTicket, 15, 45);
 
-		const columns = ["ASPECTO A EVALUAR", "RESPUESTA"];
+    const columns = ["ASPECTO A EVALUAR", "RESPUESTA"];
 
-		const numFilas = preguntas.length;
-		const rows = preguntas.map(pregunta => [pregunta.pregunta_label, pregunta.respuesta]);
-		const primerasPreguntas = rows.slice(0, numFilas - 1);
-		const ultimaPregunta = rows[numFilas - 1];
+    const numFilas = preguntas.length;
+    const rows = preguntas.map(pregunta => [pregunta.pregunta_label, pregunta.respuesta]);
+    const primerasPreguntas = rows.slice(0, numFilas - 1);
+    const ultimaPregunta = rows[numFilas - 1];
+    const penultimaPregunta = rows[numFilas - 2];
+    const ultimaPreguntaModificada = [ultimaPregunta[0], ultimaPregunta[1]];
+	const penultimaModificada =  [penultimaPregunta[0], penultimaPregunta[1]];
 
-		doc.autoTable({
-			head: [columns],
-			body: primerasPreguntas,
-			margin: {
-				top: 50
-			},
-			styles: {
-				fontSize: 16,
-				cellPadding: 5,
-				textColor: [0, 0, 0],
-				lineWidth: 0.75,
-				lineColor: [0, 0, 0]
-			},
-			headStyles: {
-				halign: 'center',
-			}
-		});
+    if (ultimaPregunta[0] == 'Valoración Global') {
+        rows[numFilas - 1] = ultimaPreguntaModificada;
+    }
 
-		doc.setFontSize(18);
-		if (ultimaPregunta) {
-			const textoUltima = `${ultimaPregunta[0]}\n${ultimaPregunta[1]}`;
-			const marginLeft = 15;
-			const marginTop = doc.lastAutoTable.finalY + 10;
-			const textWidth = pageWidth - (2 * marginLeft);
+    doc.autoTable({
+        head: [columns],
+        body: rows,
+        margin: {
+            top: 50
+        },
+        styles: {
+            fontSize: 16,
+            cellPadding: 5,
+            textColor: [0, 0, 0],
+            lineWidth: 0.75,
+            lineColor: [0, 0, 0]
+        },
+        headStyles: {
+            halign: 'center',
+        }
+    });
 
-			const textLines = doc.splitTextToSize(textoUltima, textWidth);
+    doc.setFontSize(18);
+    if (ultimaPreguntaModificada) {
+        const textoUltima = `${penultimaModificada[0]}\n${penultimaModificada[1]}`;
+        const marginLeft = 15;
+        const marginTop = doc.lastAutoTable.finalY + 10;
+        const textWidth = pageWidth - (2 * marginLeft);
 
-			let posicionY = marginTop;
-			textLines.forEach(line => {
-				if (posicionY + 10 > pageHeight) {
-					doc.addPage();
-					posicionY = 10;
-				}
-				doc.text(line, marginLeft, posicionY);
-				posicionY += 10;
-			});
-		}
+        const textLines = doc.splitTextToSize(textoUltima, textWidth);
 
-		doc.save('Ticket_No.' + ticket_number + '_evaluación.pdf');
-	}
+        let posicionY = marginTop;
+        textLines.forEach(line => {
+            if (posicionY + 10 > pageHeight) {
+                doc.addPage();
+                posicionY = 10;
+            }
+            doc.text(line, marginLeft, posicionY);
+            posicionY += 10;
+        });
+    }
+
+    doc.save('Ticket_No.' + ticket_number + '_evaluación.pdf');
+}
 </script>
 
 <h1>Dictaminación</h1>
@@ -136,16 +144,16 @@ if (db_num_rows($sql_opcionesAsignadas) > 0 && db_num_rows($res_formulario) == 1
 <?php
 if (db_num_rows($res) > 0) {
 ?>
-	<table border="1">
-		<thead>
-			<tr>
-				<th>Ticket</th>
-				<th>Estado</th>
-				<th>Exportar</th>
-			</tr>
-		</thead>
-		<tbody>
-			<?php
+<table border="1">
+    <thead>
+        <tr>
+            <th>Ticket</th>
+            <th>Estado</th>
+            <th>Exportar</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php
 			while ($row = db_fetch_array($res)) {
 				$ticket_number = $row['number'];
 				$ticket_id = $row['ticket_id'];
@@ -178,8 +186,8 @@ if (db_num_rows($res) > 0) {
 				echo "</tr>";
 			}
 			?>
-		</tbody>
-	</table>
+    </tbody>
+</table>
 <?php
 } else {
 	echo "<p>No tiene tickets asignados por el momento.</p>";
