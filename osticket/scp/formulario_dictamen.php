@@ -69,7 +69,7 @@ if ($id_form = db_fetch_array($res_formulario)) {
 
                 if ($pregunta_id != 'ticket_id' && $pregunta_id != '__CSRFToken__') {
                     $pregunta_label = isset($preguntas_labels[$pregunta_id]) ? $preguntas_labels[$pregunta_id] : '';
-                    if($pregunta_label == ''){
+                    if ($pregunta_label == '') {
                         $pregunta_label = 'Valoración Global';
                     }
                     $stmt_respuesta = db_query("INSERT INTO " . $TABLE_PREFIX . "dictaminacion_respuestas (id_staff, id_ticket, pregunta, pregunta_label, respuesta) VALUES ($staff_id, $ticket_id, '$pregunta_id', '$pregunta_label', '$respuesta')");
@@ -148,9 +148,9 @@ if ($id_form = db_fetch_array($res_formulario)) {
             $opciones = db_query($sql_listas);
 
             while ($row = db_fetch_array($opciones)) {
-                $opcion = $row['value'];
-                $opcion_val = $row['extra'] ? $row['extra'] : $row['value'];
-                echo "<option value=" . $opcion . ">" . $opcion_val . "</option>";
+                $opcion = htmlspecialchars($row['value'], ENT_QUOTES, 'UTF-8');
+                $opcion_val = $row['extra'] ? htmlspecialchars($row['extra'], ENT_QUOTES, 'UTF-8') : $opcion;
+                echo "<option value=\"$opcion\">" . $opcion_val . "</option>";
             }
 
             if ($estatus) {
@@ -198,9 +198,9 @@ if ($id_form = db_fetch_array($res_formulario)) {
     $opciones = db_query($sql_listas);
 
     while ($row = db_fetch_array($opciones)) {
-        $opcion = $row['value'];
-        $opcion_val = $row['extra'] ? $row['extra'] : $row['value'];
-        echo "<option value=" . $opcion . ">" . $opcion_val . "</option>";
+        $opcion = htmlspecialchars($row['value'], ENT_QUOTES, 'UTF-8');
+        $opcion_val = $row['extra'] ? htmlspecialchars($row['extra'], ENT_QUOTES, 'UTF-8') : $opcion;
+        echo "<option value=\"$opcion\">" . $opcion_val . "</option>";
     }
 
     if ($estatus) {

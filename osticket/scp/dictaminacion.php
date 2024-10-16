@@ -50,91 +50,96 @@ if (db_num_rows($sql_opcionesAsignadas) > 0 || db_num_rows($res_formulario) == 1
     }
 
     async function generarPdf(preguntas_json, ticket_number) {
-        let preguntas = preguntas_json;
-        const {
-            jsPDF
-        } = window.jspdf;
+    let preguntas = preguntas_json;
+    const {
+        jsPDF
+    } = window.jspdf;
 
-        const doc = new jsPDF({
-            orientation: 'landscape',
-            unit: 'mm',
-            format: 'a4'
-        });
-        doc.setFontSize(20);
+    const doc = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+    });
+    doc.setFontSize(20);
 
-        const pageWidth = doc.internal.pageSize.getWidth();
-        const pageHeight = doc.internal.pageSize.getHeight();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
 
-        const titulo1 = "BENEMÉRITA ESCUELA NORMAL VERACRUZANA ENRIQUE C. RÉBSAMEN.";
-        const titulo2 = "OFICINA DE INNOVACIÓN EDUCATIVA";
+    const titulo1 = "BENEMÉRITA ESCUELA NORMAL VERACRUZANA ENRIQUE C. RÉBSAMEN.";
+    const titulo2 = "OFICINA DE INNOVACIÓN EDUCATIVA";
 
-        const titulo1Width = doc.getTextWidth(titulo1);
-        const titulo2Width = doc.getTextWidth(titulo2);
+    const titulo1Width = doc.getTextWidth(titulo1);
+    const titulo2Width = doc.getTextWidth(titulo2);
 
-        const titulo1X = (pageWidth - titulo1Width) / 2;
-        const titulo2X = (pageWidth - titulo2Width) / 2;
+    const titulo1X = (pageWidth - titulo1Width) / 2;
+    const titulo2X = (pageWidth - titulo2Width) / 2;
 
-        doc.text(titulo1, titulo1X, 20);
-        doc.text(titulo2, titulo2X, 30);
+    doc.text(titulo1, titulo1X, 20);
+    doc.text(titulo2, titulo2X, 30);
 
-        doc.setFontSize(18);
-        const nombreTicket = "Evaluación del ticket #" + ticket_number;
+    doc.setFontSize(18);
+    const nombreTicket = "Evaluación del ticket #" + ticket_number;
 
-        doc.text(nombreTicket, 15, 45);
+    doc.text(nombreTicket, 15, 45);
 
-        const columns = ["ASPECTO A EVALUAR", "RESPUESTA"];
+    const columns = ["ASPECTO A EVALUAR", "RESPUESTA"];
 
-        const numFilas = preguntas.length;
-        const rows = preguntas.map(pregunta => [pregunta.pregunta_label, pregunta.respuesta]);
+    const numFilas = preguntas.length;
+    const rows = preguntas.map(pregunta => [pregunta.pregunta_label, pregunta.respuesta]);
 
-        // Crear una copia de la tabla sin la penúltima fila
-        const rowsCopy = [...rows];
-        rowsCopy.splice(numFilas - 2, 1); // Eliminar la penúltima fila
+    // Crear una copia de la tabla sin la penúltima fila
+    const rowsCopy = [...rows];
+    rowsCopy.splice(numFilas - 2, 1); // Eliminar la penúltima fila
 
-        if (rows[numFilas - 1][0] == 'Valoración Global') {
-            rows[numFilas - 1] = [rows[numFilas - 1][0], rows[numFilas - 1][1]];
-        }
-
-        doc.autoTable({
-            head: [columns],
-            body: rowsCopy,
-            margin: {
-                top: 50
-            },
-            styles: {
-                fontSize: 16,
-                cellPadding: 5,
-                textColor: [0, 0, 0],
-                lineWidth: 0.75,
-                lineColor: [0, 0, 0]
-            },
-            headStyles: {
-                halign: 'center',
-            }
-        });
-
-        doc.setFontSize(18);
-        if (rows[numFilas - 1]) {
-            const textoUltima = `${rows[numFilas - 2][0]}\n${rows[numFilas - 2][1]}`;
-            const marginLeft = 15;
-            const marginTop = doc.lastAutoTable.finalY + 10;
-            const textWidth = pageWidth - (2 * marginLeft);
-
-            const textLines = doc.splitTextToSize(textoUltima, textWidth);
-
-            let posicionY = marginTop;
-            textLines.forEach(line => {
-                if (posicionY + 10 > pageHeight) {
-                    doc.addPage();
-                    posicionY = 10;
-                }
-                doc.text(line, marginLeft, posicionY);
-                posicionY += 10;
-            });
-        }
-
-        doc.save('Ticket_No.' + ticket_number + '_evaluación.pdf');
+    if (rows[numFilas - 1][0] == 'Valoración Global') {
+        rows[numFilas - 1] = [rows[numFilas - 1][0], rows[numFilas - 1][1]];
     }
+
+    // Generar la tabla de respuestas
+    doc.autoTable({
+        head: [columns],
+        body: rowsCopy,
+        margin: {
+            top: 50
+        },
+        styles: {
+            fontSize: 16,
+            cellPadding: 5,
+            textColor: [0, 0, 0],
+            lineWidth: 0.75,
+            lineColor: [0, 0, 0]
+        },
+        headStyles: {
+            halign: 'center',
+        }
+    });
+
+    // Salto de página para la última pregunta
+    doc.addPage();  // Añade una nueva página
+
+    doc.setFontSize(18);
+
+    if (rows[numFilas - 1]) {
+        const textoUltima = `${rows[numFilas - 2][0]}\n${rows[numFilas - 2][1]}`;
+        const marginLeft = 15;
+        const marginTop = 20; // Margen superior en la nueva página
+        const textWidth = pageWidth - (2 * marginLeft);
+
+        const textLines = doc.splitTextToSize(textoUltima, textWidth);
+
+        let posicionY = marginTop;
+        textLines.forEach(line => {
+            if (posicionY + 10 > pageHeight) {
+                doc.addPage();
+                posicionY = 10;
+            }
+            doc.text(line, marginLeft, posicionY);
+            posicionY += 10;
+        });
+    }
+
+    doc.save('Ticket_No.' + ticket_number + '_evaluación.pdf');
+}
 </script>
 
 <h1>Dictaminación</h1>
