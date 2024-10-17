@@ -34,7 +34,7 @@ if ($idListaSeleccionada = db_fetch_array($sql_idLista)) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $existe_opciones = true;
-    print_r($_POST);
+    //print_r($_POST);
     if (isset($_POST['lista']) && isset($_POST['respuesta_correcta'])) {
         $id_lista = intval($_POST['lista']);
         $respuestas_correctas = $_POST['respuesta_correcta']; // Solo las respuestas seleccionadas
@@ -84,6 +84,100 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 ?>
+
+<style>
+    /* Ajuste general de la tabla */
+    table {
+        margin: 0 auto;
+        /* Centramos la tabla */
+        border-collapse: collapse;
+        /* Eliminamos espacios entre celdas */
+        width: 80%;
+    }
+
+    th,
+    td {
+        padding: 10px;
+        /* Espaciado interno */
+        text-align: center;
+        border: 1px solid #ddd;
+        /* Bordes suaves */
+    }
+
+    th {
+        background-color: #f2f2f2;
+        /* Color de fondo de encabezados */
+        font-weight: bold;
+    }
+
+    /* Ajuste para los botones */
+    input[type="button"],
+    input[type="submit"] {
+        background-color: orangered;
+        /* Color verde */
+        color: white;
+        /* Texto en blanco */
+        padding: 8px 16px;
+        /* Tamaño moderado */
+        font-size: 14px;
+        /* Texto más pequeño */
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        /* Icono de mano para interacción */
+        margin-left: 10px;
+        /* Espacio entre botones */
+    }
+
+    input[type="submit"]:hover,
+    input[type="button"]:hover {
+        background-color: orange;
+        /* Efecto hover */
+    }
+
+    /* Estilo para el combo box lista */
+    #lista {
+        background-color: orangered;
+        /* Color de fondo del select */
+        color: white;
+        /* Texto en blanco */
+        font-size: 14px;
+        /* Tamaño de fuente igual a los botones */
+        padding: 10px 16px;
+        /* Tamaño igual a los botones, un poco más grande */
+        border: none;
+        /* Sin bordes */
+        border-radius: 4px;
+        /* Bordes redondeados */
+        cursor: pointer;
+        /* Icono de mano para interacción */
+        margin-right: 10px;
+        /* Espacio entre el select y los botones */
+        /* Ancho específico para igualar botones */
+        height: 40px;
+        /* Altura del select */
+    }
+
+    #lista:active {
+        background-color: orangered;
+        /* Cambia a naranja cuando está en foco */
+        color: white;
+        /* Asegúrate de que el texto sea legible */
+    }
+
+    #lista option:active {
+        background-color: white;
+        /* Color de fondo para opciones en foco */
+    }
+
+    /* Alineación de botones a la derecha */
+    form {
+        text-align: right;
+        /* Alinea los botones a la derecha */
+        margin-top: 20px;
+        /* Espacio superior */
+    }
+</style>
 
 <script>
     var maxSeleccionables; // Variable global para el límite de checkboxes seleccionables
@@ -187,9 +281,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (checkbox.checked) {
                     checkbox.disabled = false;
                 }
-            } else {
-                // Habilitar todos los checkboxes si aún no se ha alcanzado el límite
-                checkbox.disabled = true;
             }
         });
     }
@@ -241,15 +332,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 <h1>Configuración</h1>
-<p>Este apartado deberá crear las opciones correspondientes para la valoración general de la dictaminación y cuáles
+<p>Este apartado deberá seleccionar las opciones correspondientes para la valoración general de la dictaminación y cuáles
     deberán ser las que son correctas para el dictamen.</p>
 
 <div id="formulario">
-    <label for="lista" class="titulo">Nombre de la lista: </label>
     <form action="configuracion_dictamen.php" id="configForm" class="dynamic-form" method="post"
         onsubmit="validarSeleccion(event)">
         <?php csrf_token(); ?>
-        <select name="lista" id="lista" onchange="seleccionarLista()" <?php echo $existe_opciones ? 'disabled' : ''; ?>>
+        <label for="lista" class="titulo">Nombre de la lista: </label>
+        <select name="lista" id="lista" onchange="seleccionarLista()" <?php echo $existe_opciones ? 'disabled' : ''; ?>><br>
             <?php
             $resultado_listas = db_query($sql_listas);
 
@@ -316,7 +407,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         // Generar la fila de la tabla con el checkbox marcado si corresponde
                         echo "<tr>";
                         echo "<td>$nombre_opcion</td>";
-                        echo "<td><input type='checkbox' nombre_opcion' name='respuesta_correcta[]' value='$nombre_opcion' " . ($checked ? "checked" : "") . " disabled></td>";
+                        echo "<td><input type='checkbox' nombre_opcion' id= name='respuesta_correcta[]' value='$nombre_opcion' " . ($checked ? "checked" : "") . " disabled></td>";
                         echo "<script> seleccionarListaAlmacenada(); </script>";
                         echo "</tr>";
                     }
@@ -330,7 +421,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <br>
         <input type="button" id="btnGuardar" value="<?php echo $existe_opciones ? 'Editar' : 'Guardar'; ?>"
             class="button" onclick="<?php echo $existe_opciones ? 'editar()' : 'guardar()'; ?>">
-        <button type="button" onclick="volver()" class="button">Cancelar</button>
+        <input type="button" onclick="volver()" class="button" value="Cancelar">
     </form>
 </div>
 

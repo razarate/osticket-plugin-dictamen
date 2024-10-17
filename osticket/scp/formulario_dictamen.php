@@ -109,6 +109,98 @@ if ($id_form = db_fetch_array($res_formulario)) {
         margin-bottom: 5px;
         font-weight: bold;
     }
+
+    table {
+        margin: 0 auto;
+        /* Centramos la tabla */
+        border-collapse: collapse;
+    }
+
+    th,
+    td {
+        padding: 5px;
+        /* Espaciado interno */
+        text-align: center;
+        border: 1px solid #ddd;
+        /* Bordes suaves */
+    }
+
+    th {
+        background-color: #f2f2f2;
+        /* Color de fondo de encabezados */
+        font-weight: bold;
+    }
+
+    .lb_preguntas{
+        text-align: justify;
+    }
+
+    input[type="button"],
+    input[type="submit"],
+    .botones {
+        background-color: orangered;
+        /* Color verde */
+        color: white;
+        /* Texto en blanco */
+        padding: 8px 16px;
+        /* Tamaño moderado */
+        font-size: 14px;
+        /* Texto más pequeño */
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        /* Icono de mano para interacción */
+        margin-left: 10px;
+        /* Espacio entre botones */
+    }
+
+    input[type="submit"]:hover,
+    input[type="button"]:hover {
+        background-color: orange;
+        /* Efecto hover */
+    }
+
+    select {
+        background-color: orangered;
+        /* Color de fondo del select */
+        color: white;
+        /* Texto en blanco */
+        font-size: 14px;
+        /* Tamaño de fuente igual a los botones */
+        padding: 10px 16px;
+        /* Tamaño igual a los botones, un poco más grande */
+        border: none;
+        /* Sin bordes */
+        border-radius: 4px;
+        /* Bordes redondeados */
+        cursor: pointer;
+        /* Icono de mano para interacción */
+        margin-right: 10px;
+        /* Espacio entre el select y los botones */
+        /* Ancho específico para igualar botones */
+        height: 40px;
+        /* Altura del select */
+    }
+
+    select:active {
+        background-color: orangered;
+        /* Cambia a naranja cuando está en foco */
+        color: white;
+        /* Asegúrate de que el texto sea legible */
+    }
+
+    select option:active {
+        background-color: white;
+        /* Color de fondo para opciones en foco */
+    }
+
+    /* Alineación de botones a la derecha */
+    form {
+        text-align: right;
+        /* Alinea los botones a la derecha */
+        margin-top: 20px;
+        /* Espacio superior */
+    }
 </style>
 
 <script>
@@ -129,6 +221,12 @@ if ($id_form = db_fetch_array($res_formulario)) {
     // Rehacer la consulta para obtener las preguntas
     $preguntas = db_query($sql_form);
     echo "<table>";
+    echo "<thead>
+                <tr>
+                    <th>Aspecto a evaluar</th>
+                    <th>Respuesta</th>
+                </tr>
+            </thead>";
     while ($fila = db_fetch_array($preguntas)) {
         $pregunta = $fila['label'];
         $pregunta_nombre = $fila['name'];
@@ -138,9 +236,9 @@ if ($id_form = db_fetch_array($res_formulario)) {
         if (strpos($fila['type'], 'list-') === 0) {
             // Aquí extraes el ID de la lista directamente del nombre, después de 'list-'
             $list_id = intval(str_replace('list-', '', $fila['type']));
-            echo "<td><label for=" . $pregunta_nombre . ">" . $pregunta . "</label></td>";
+            echo "<td class='lb_preguntas'><label for=" . $pregunta_nombre . ">" . $pregunta . "</label></td>";
             echo "<td>";
-            echo "<select id=" . $pregunta_nombre . " name=" . $pregunta_nombre . ">";
+            echo "<select class='items' id=" . $pregunta_nombre . " name=" . $pregunta_nombre . ">";
 
             // Ahora usas $list_id dinámicamente
             $sql_listas = "SELECT * FROM " . $TABLE_PREFIX . "list_items WHERE list_id = $list_id ORDER BY sort";
@@ -166,7 +264,7 @@ if ($id_form = db_fetch_array($res_formulario)) {
 
             echo "</select></br></br>";
         } elseif ($fila['type'] == 'memo') {
-            echo "<td><label for=" . $pregunta_nombre . ">" . $pregunta . "</label></td>";
+            echo "<td class='lb_preguntas'><label for=" . $pregunta_nombre . ">" . $pregunta . "</label></td>";
             echo "<td>";
             echo "<textarea id=" . $pregunta_nombre . " name=" . $pregunta_nombre . " rows ='10' cols='50'></textarea>";
 
@@ -190,9 +288,9 @@ if ($id_form = db_fetch_array($res_formulario)) {
         echo "</tr>";
     }
     echo "<tr>";
-    echo "<td><label for=" . $nombreListaAsignada . ">Valoración Global</label></td>";
+    echo "<td class='lb_preguntas'><label for=" . $nombreListaAsignada . ">Valoración Global</label></td>";
     echo "<td>";
-    echo "<select id=" . $nombreListaAsignada . " name=" . $nombreListaAsignada . ">";
+    echo "<select class='items' id=" . $nombreListaAsignada . " name=" . $nombreListaAsignada . ">";
     $sql_listas = "SELECT * FROM " . $TABLE_PREFIX . "list_items WHERE list_id = $idListaAsignada ORDER BY sort";
     $opciones = db_query($sql_listas);
 
@@ -218,7 +316,7 @@ if ($id_form = db_fetch_array($res_formulario)) {
     echo "</td>";
     echo "</tr>";
     echo "</table>";
-
+    echo "</br>";
     if ($estatus) { ?>
         <input type="button" value="Volver" onclick="volver()">
     <?php } else { ?>
