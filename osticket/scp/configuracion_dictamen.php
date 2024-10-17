@@ -33,6 +33,7 @@ if ($idListaSeleccionada = db_fetch_array($sql_idLista)) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $existe_opciones = true;
     print_r($_POST);
     if (isset($_POST['lista']) && isset($_POST['respuesta_correcta'])) {
         $id_lista = intval($_POST['lista']);
@@ -50,7 +51,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($id_lista != $idLista) {
             $sql_eliminar_todas = "DELETE FROM " . $TABLE_PREFIX . "dictaminacion_opciones WHERE id_lista= $idLista";
             db_query($sql_eliminar_todas);
-        } 
+            $idLista = $id_lista;
+        }
 
         // Paso 2: Insertar las nuevas respuestas correctas
         foreach ($respuestas_correctas as $opcion_nombre) {
@@ -87,6 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     var maxSeleccionables; // Variable global para el límite de checkboxes seleccionables
 
     function seleccionarLista() {
+
         // Obtener la lista seleccionada
         var select = document.getElementById('lista');
         var selectedOption = select.options[select.selectedIndex];
@@ -138,6 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         });
     }
 
+
     function verificarSeleccion() {
         // Obtener todos los checkboxes
         var checkboxes = document.querySelectorAll('input[type="checkbox"][name="respuesta_correcta[]"]');
@@ -158,6 +162,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         });
     }
+
+    function seleccionarListaAlmacenada() {
+        var checkboxe = document.getElementsByName('respuesta_correcta[]');
+
+        // Iterar sobre todos los checkboxes y agregar el event listener
+        Array.from(checkboxe).forEach(function(checkbox) {
+            checkbox.addEventListener('change', verificarSeleccionAlmacenada);
+        });
+    }
+
+
+    function verificarSeleccionAlmacenada() {
+        // Obtener todos los checkboxes
+        var checkboxes = document.querySelectorAll('input[type="checkbox"][name="respuesta_correcta[]"]');
+
+        // Contar cuántos están seleccionados
+        var seleccionados = Array.from(checkboxes).filter(checkbox => checkbox.checked).length;
+
+        // Si el número de seleccionados alcanza el máximo permitido, deshabilitar los checkboxes no seleccionados
+        checkboxes.forEach(function(checkbox) {
+            if (seleccionados >= maxSeleccionables) {
+                // Deshabilitar checkboxes que no están seleccionados
+                if (checkbox.checked) {
+                    checkbox.disabled = false;
+                }
+            } else {
+                // Habilitar todos los checkboxes si aún no se ha alcanzado el límite
+                checkbox.disabled = true;
+            }
+        });
+    }
+
 
     function validarGuardar() {
         var checkboxes = document.querySelectorAll('input[type="checkbox"][name="respuesta_correcta[]"]');
@@ -254,6 +290,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Mostrar las opciones de la lista y marcar las que coincidan con las almacenadas
                 // Mostrar las opciones de la lista y marcar las que coincidan con las almacenadas
                 if ($existe_opciones) {
+
                     $sql_opciones_almacenadas = "SELECT * FROM " . $TABLE_PREFIX . "dictaminacion_opciones WHERE id_lista = " . $idLista;
                     $resultado_opciones = db_query($sql_opciones_almacenadas);
                     $opciones_almacenadas = [];
@@ -279,7 +316,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         // Generar la fila de la tabla con el checkbox marcado si corresponde
                         echo "<tr>";
                         echo "<td>$nombre_opcion</td>";
-                        echo "<td><input type='checkbox' name='respuesta_correcta[]' value='$nombre_opcion' " . ($checked ? "checked" : "") . " disabled></td>";
+                        echo "<td><input type='checkbox' nombre_opcion' name='respuesta_correcta[]' value='$nombre_opcion' " . ($checked ? "checked" : "") . " disabled></td>";
+                        echo "<script> seleccionarListaAlmacenada(); </script>";
                         echo "</tr>";
                     }
                 } else {
@@ -290,7 +328,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </table>
 
         <br>
-        <input type="button" id="btnGuardar" value="<?php echo $existe_opciones ? 'Editar' : 'Guardar'; ?>" class="button" onclick="<?php echo $existe_opciones ? 'editar()' : 'guardar()'; ?>">
+        <input type="button" id="btnGuardar" value="<?php echo $existe_opciones ? 'Editar' : 'Guardar'; ?>"
+            class="button" onclick="<?php echo $existe_opciones ? 'editar()' : 'guardar()'; ?>">
         <button type="button" onclick="volver()" class="button">Cancelar</button>
     </form>
 </div>
