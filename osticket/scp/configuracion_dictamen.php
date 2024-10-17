@@ -38,7 +38,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id_lista = intval($_POST['lista']);
         $respuestas_correctas = $_POST['respuesta_correcta']; // Solo las respuestas seleccionadas
 
-        // Obtener todas las posibles opciones de la base de datos
         $sql_opciones = "SELECT opcion_nombre FROM " . $TABLE_PREFIX . "dictaminacion_opciones WHERE id_lista = $id_lista";
         $result_opciones = db_query($sql_opciones);
 
@@ -48,44 +47,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $todas_opciones[] = $row['opcion_nombre'];
         }
 
-        // Si existen opciones, proceder a actualizar o eliminar
-        if (isset($existe_opciones) && $existe_opciones) {
-            // Actualizar las opciones existentes
-            foreach ($respuestas_correctas as $opcion_nombre) {
-                if (!in_array($opcion_nombre, $todas_opciones)) {
-                    // Si no existe, insertamos una nueva opción
-                    $sql_insertar = "INSERT INTO " . $TABLE_PREFIX . "dictaminacion_opciones (id_lista, opcion_nombre, es_correcta) 
-                                     VALUES ($id_lista, '$opcion_nombre', 1)";
-                    db_query($sql_insertar);
-                } else {
-                    // Si ya existe, actualizamos el estado de es_correcta
-                    $sql_actualizar = "UPDATE " . $TABLE_PREFIX . "dictaminacion_opciones 
-                                       SET es_correcta = 1 
-                                       WHERE id_lista = $id_lista AND opcion_nombre = '$opcion_nombre'";
-                    db_query($sql_actualizar);
-                }
-            }
+        if ($id_lista != $idLista) {
+            $sql_eliminar_todas = "DELETE FROM " . $TABLE_PREFIX . "dictaminacion_opciones WHERE id_lista= $idLista";
+            db_query($sql_eliminar_todas);
+        } 
 
-            // Eliminar las opciones que no están en las respuestas correctas
-            $sql_eliminar = "DELETE FROM " . $TABLE_PREFIX . "dictaminacion_opciones 
-                             WHERE id_lista = $id_lista AND opcion_nombre NOT IN ('" . implode("', '", $respuestas_correctas) . "')";
-            db_query($sql_eliminar);
-        } else {
-            // Si no existen opciones, insertar todas las respuestas correctas
-            foreach ($respuestas_correctas as $opcion_nombre) {
+        // Paso 2: Insertar las nuevas respuestas correctas
+        foreach ($respuestas_correctas as $opcion_nombre) {
+            if (in_array($opcion_nombre, $todas_opciones)) {
+
+                $sql_actualizar = "UPDATE " . $TABLE_PREFIX . "dictaminacion_opciones 
+            SET es_correcta = 1 
+            WHERE id_lista = $id_lista AND opcion_nombre = '$opcion_nombre'";
+                db_query($sql_actualizar);
+
+                // Si no existe, insertamos una nueva opción
+
+            } else {
+                // Paso 1: Eliminar las opciones anteriores de la lista
                 $sql_insertar = "INSERT INTO " . $TABLE_PREFIX . "dictaminacion_opciones (id_lista, opcion_nombre, es_correcta) 
-                                 VALUES ($id_lista, '$opcion_nombre', 1)";
+                VALUES ($id_lista, '$opcion_nombre', 1)";
                 db_query($sql_insertar);
+                // Si ya existe, actualizamos el estado de es_correcta
+
             }
         }
-
+        $sql_eliminar = "DELETE FROM " . $TABLE_PREFIX . "dictaminacion_opciones 
+        WHERE id_lista = $id_lista AND opcion_nombre NOT IN ('" . implode("', '", $respuestas_correctas) . "')";
+        db_query($sql_eliminar);
         // Guardar la lista y las opciones seleccionadas para mostrarlas
         $lista_seleccionada = $id_lista;
         $opciones_seleccionadas = $respuestas_correctas;
-        $existe_opciones = true;
     }
 }
-
 
 ?>
 
@@ -288,6 +282,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         echo "<td><input type='checkbox' name='respuesta_correcta[]' value='$nombre_opcion' " . ($checked ? "checked" : "") . " disabled></td>";
                         echo "</tr>";
                     }
+                } else {
+                    echo "<script> seleccionarLista() </script>";
                 }
                 ?>
             </tbody>
