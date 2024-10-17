@@ -52,7 +52,6 @@ if ($id_form = db_fetch_array($res_formulario)) {
         $preguntas_labels[$fila['name']] = $fila['label'];
     }
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        print_r($_POST);
         $ticket_id = intval($_POST['ticket_id']);
         // Verifica si ya existe un registro en ost_dictaminacion para el ticket y el staff
         $check_dictaminacion = db_query("SELECT * FROM " . $TABLE_PREFIX . "dictaminacion WHERE id_ticket = $ticket_id AND id_staff = $staff_id");
@@ -144,7 +143,7 @@ if ($id_form = db_fetch_array($res_formulario)) {
             echo "<select id=" . $pregunta_nombre . " name=" . $pregunta_nombre . ">";
 
             // Ahora usas $list_id dinámicamente
-            $sql_listas = "SELECT * FROM " . $TABLE_PREFIX . "list_items WHERE list_id = $list_id";
+            $sql_listas = "SELECT * FROM " . $TABLE_PREFIX . "list_items WHERE list_id = $list_id ORDER BY sort";
             $opciones = db_query($sql_listas);
 
             while ($row = db_fetch_array($opciones)) {
@@ -194,7 +193,7 @@ if ($id_form = db_fetch_array($res_formulario)) {
     echo "<td><label for=" . $nombreListaAsignada . ">Valoración Global</label></td>";
     echo "<td>";
     echo "<select id=" . $nombreListaAsignada . " name=" . $nombreListaAsignada . ">";
-    $sql_listas = "SELECT * FROM " . $TABLE_PREFIX . "list_items WHERE list_id = $idListaAsignada";
+    $sql_listas = "SELECT * FROM " . $TABLE_PREFIX . "list_items WHERE list_id = $idListaAsignada ORDER BY sort";
     $opciones = db_query($sql_listas);
 
     while ($row = db_fetch_array($opciones)) {

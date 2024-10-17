@@ -31,7 +31,7 @@ if (db_num_rows($res_formulario) == 0) {
     $error = 'Parece que el administrador no ha configurado el formulario de dictaminación correctamente. Verifique que no haya duplicidad en el nombre de Dictaminación';
 }
 
-if (db_num_rows($sql_opcionesAsignadas) > 0 || db_num_rows($res_formulario) == 1) {
+if (db_num_rows($sql_opcionesAsignadas) > 0 && db_num_rows($res_formulario) == 1) {
     $ir_formulario = true;
 } else {
     $ir_formulario = false;
