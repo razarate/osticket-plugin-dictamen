@@ -165,14 +165,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         });
     }
 
-    function validarSeleccion(event) {
+    function validarGuardar() {
         var checkboxes = document.querySelectorAll('input[type="checkbox"][name="respuesta_correcta[]"]');
         var seleccionados = Array.from(checkboxes).filter(checkbox => checkbox.checked).length;
 
         // Si no hay ningún checkbox seleccionado, bloquear el envío
         if (seleccionados === 0) {
-            event.preventDefault(); // Evita que el formulario se envíe
+            alert("Por favor, seleccione al menos una opción para guardar."); // Mensaje de advertencia
+            return false; // Prevenir el envío
         }
+        return true; // Permitir el envío
     }
 
     function editar() {
@@ -186,18 +188,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         });
 
         // Cambiar el texto del botón a "Guardar"
-        document.getElementById('btnGuardar').value = "Guardar";
-        document.getElementById('btnGuardar').setAttribute('onclick', 'guardar()');
+        var btnGuardar = document.getElementById('btnGuardar');
+        btnGuardar.value = "Guardar";
+        btnGuardar.onclick = function(event) {
+            guardar(event); // Asegúrate de pasar el evento aquí
+        };
     }
 
-    function guardar() {
-        document.getElementById('configForm').submit(); // Enviar el formulario
+    function guardar(event) {
+        if (validarGuardar()) { // Verificar si se pueden guardar
+            document.getElementById('configForm').submit(); // Enviar el formulario
+        } else {
+            event.preventDefault(); // Evita que el formulario se envíe si no hay seleccionados
+        }
     }
 
     function volver() {
         window.location.href = 'dictaminacion_admin.php';
     }
 </script>
+
+
 
 <h1>Configuración</h1>
 <p>Este apartado deberá crear las opciones correspondientes para la valoración general de la dictaminación y cuáles
