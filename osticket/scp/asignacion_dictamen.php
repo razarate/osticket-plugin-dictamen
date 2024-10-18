@@ -64,6 +64,9 @@ require_once(STAFFINC_DIR . 'header.inc.php');
 $est = 0;
 global $est;
 
+$prueba = 0;
+global $prueba;
+
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 	$ticket_id = intval($_GET['id']);
 	global $ticket_id;
@@ -74,7 +77,6 @@ if (isset($_GET['idEstado'])) {
 	global $estado_id;
 }
 
-
 $sql = "SELECT * FROM " . $TABLE_PREFIX . "ticket WHERE ticket_id = $ticket_id";
 $res = db_query($sql);
 
@@ -82,14 +84,17 @@ if ($ticket = db_fetch_array($res)) {
 	echo "<h3>Asignación del ticket #" . $ticket['number'] . "</h3>";
 }
 
-
 $limite = 2;
 global $limite;
 if ($estado_id == 2) {
 	$limite = 3;
 }
 
+
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+	print_r($_POST);
+	$pruebas = intval($_POST['prueba']);
 	$ticket_id = intval($_POST['ticket_id']);
 	$id_estado = intval($_POST['estado_id']);
 	$id_anterior = $_POST['anterior'];
@@ -97,29 +102,61 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	$agentes_seleccionados = $_POST['opciones'];
 	$agentes_anteriores = $_POST['anteriores'];
 	if ($id_estado == 3) {
-		foreach ($agentes_seleccionados as $opcion) {
-			$sql_verificar = "SELECT id_asignacion FROM " . $TABLE_PREFIX . "dictaminacion_asignaciones WHERE id_ticket = $ticket_id AND id_staff = $opcion";
-			$res_verificar = db_query($sql_verificar);
-
-			if (db_num_rows($res_verificar) > 0) {
-				$fila_asignacion = db_fetch_array($res_verificar);
-				$id_asignacion = $fila_asignacion['id_asignacion'];
-				$sql_actualizar = "UPDATE " . $TABLE_PREFIX . "dictaminacion_asignaciones SET id_staff = $opcion WHERE id_asignacion = $id_asignacion";
-				db_query($sql_actualizar);
-				echo "<script>console.log('Asignación actualizada para el agente $opcion');</script>";
-			} else {
-				$sql_insertar = "INSERT INTO " . $TABLE_PREFIX . "dictaminacion_asignaciones (id_ticket, id_staff) VALUES ($ticket_id, $opcion)";
-				db_query($sql_insertar);
-				echo "<script>console.log('Nueva asignación guardada para el agente $opcion');</script>";
-			}
+		if($pruebas == 0){
+			echo "no";
+		}else{
+			echo "si";
 		}
-		foreach ($agentes_anteriores as $anterior) {
-			if (!in_array($anterior, $agentes_seleccionados)) {
-				foreach ($id_anterior as $ant) {
-					if ($ant != $anterior) {
-						$sql_eliminar = "DELETE FROM " . $TABLE_PREFIX . "dictaminacion_asignaciones WHERE id_ticket = $ticket_id AND id_staff = $anterior";
-						db_query($sql_eliminar);
-						echo "<script>console.log('Agente $anterior eliminado de las asignaciones');</script>";
+		if ($pruebas == 1) {
+			// Eliminar el último registro de la base de datos para el ticket actual
+			$sql_eliminar_ultimo = "DELETE FROM " . $TABLE_PREFIX . "dictaminacion_asignaciones WHERE id_ticket = $ticket_id ORDER BY id_asignacion DESC LIMIT 1";
+			db_query($sql_eliminar_ultimo);
+			echo "<script>console.log('Última asignación eliminada');</script>";
+
+			// Actualizar o insertar agentes seleccionados
+			foreach ($agentes_seleccionados as $opcion) {
+				$sql_verificar = "SELECT id_asignacion FROM " . $TABLE_PREFIX . "dictaminacion_asignaciones WHERE id_ticket = $ticket_id AND id_staff = $opcion";
+				$res_verificar = db_query($sql_verificar);
+
+				if (db_num_rows($res_verificar) > 0) {
+					// Actualizar asignación si ya existe
+					$fila_asignacion = db_fetch_array($res_verificar);
+					$id_asignacion = $fila_asignacion['id_asignacion'];
+					$sql_actualizar = "UPDATE " . $TABLE_PREFIX . "dictaminacion_asignaciones SET id_staff = $opcion WHERE id_asignacion = $id_asignacion";
+					db_query($sql_actualizar);
+					echo "<script>console.log('Asignación actualizada para el agente $opcion');</script>";
+				} else {
+					// Insertar nueva asignación
+					$sql_insertar = "INSERT INTO " . $TABLE_PREFIX . "dictaminacion_asignaciones (id_ticket, id_staff) VALUES ($ticket_id, $opcion)";
+					db_query($sql_insertar);
+					echo "<script>console.log('Nueva asignación guardada para el agente $opcion');</script>";
+				}
+			}
+		} elseif($pruebas == 0) {
+			foreach ($agentes_seleccionados as $opcion) {
+				$sql_verificar = "SELECT id_asignacion FROM " . $TABLE_PREFIX . "dictaminacion_asignaciones WHERE id_ticket = $ticket_id AND id_staff = $opcion";
+				$res_verificar = db_query($sql_verificar);
+
+				if (db_num_rows($res_verificar) > 0) {
+					$fila_asignacion = db_fetch_array($res_verificar);
+					$id_asignacion = $fila_asignacion['id_asignacion'];
+					$sql_actualizar = "UPDATE " . $TABLE_PREFIX . "dictaminacion_asignaciones SET id_staff = $opcion WHERE id_asignacion = $id_asignacion";
+					db_query($sql_actualizar);
+					echo "<script>console.log('Asignación actualizada para el agente $opcion');</script>";
+				} else {
+					$sql_insertar = "INSERT INTO " . $TABLE_PREFIX . "dictaminacion_asignaciones (id_ticket, id_staff) VALUES ($ticket_id, $opcion)";
+					db_query($sql_insertar);
+					echo "<script>console.log('Nueva asignación guardada para el agente $opcion');</script>";
+				}
+			}
+			foreach ($agentes_anteriores as $anterior) {
+				if (!in_array($anterior, $agentes_seleccionados)) {
+					foreach ($id_anterior as $ant) {
+						if ($ant != $anterior) {
+							$sql_eliminar = "DELETE FROM " . $TABLE_PREFIX . "dictaminacion_asignaciones WHERE id_ticket = $ticket_id AND id_staff = $anterior";
+							db_query($sql_eliminar);
+							echo "<script>console.log('Agente $anterior eliminado de las asignaciones');</script>";
+						}
 					}
 				}
 			}
@@ -131,7 +168,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		}
 	}
 }
-
 
 ?>
 <style>
@@ -241,7 +277,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	<input type="hidden" name="estado_id" value="<?php echo $estado_id; ?>">
 	<input type="hidden" name="anterior[]" id="anterior">
 
-	<?php csrf_token(); ?>
+	<?php csrf_token(); 
+	$prueba = 2?>
 	<table>
 
 		<th>Nombre(s)</th>
@@ -331,10 +368,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 						}
 					}
 					if ($conteo == 3) {
+						$prueba = 1;
 						echo "<script>
-				cambiarLimite(3);
+						cambiarLimite(3);
 				</script>";
 					} else {
+						$prueba = 0;
 						echo "<script>
 				cambiarLimite(2);
 				</script>";
@@ -346,7 +385,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 			echo "</tr>";
 		}
 		?>
-
+		<input type="hidden" name="prueba" value="<?php echo $prueba; ?>">
 	</table>
 	<br>
 	<?php
@@ -360,5 +399,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	<input type='button' value='Cancelar' onclick='volver()'>";
 	}
 
+	echo "</form>";
 	require_once(STAFFINC_DIR . 'footer.inc.php');
 	?>
