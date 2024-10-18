@@ -29,11 +29,21 @@ class DictaminacionPlugin extends Plugin {
 
 require_once(INCLUDE_DIR . 'class.plugin.php');
 require_once('config.php');
-class DictaminacionPlugin extends Plugin {
+require_once('sentencias.php');
+class DictaminacionPlugin extends Plugin
+{
     var $config_class = 'DictaminacionPluginConfig';
-
-    function bootstrap() {
+    var $sentencias = 'Sentencias';
+    var $activado = false;
+    function bootstrap()
+    {
         // Puedes añadir lógica si se necesita cuando el plugin esté activo
-        echo "ok";
+        $activado = true;
+        if (db_query("")) {
+            echo "ok";
+        } else {
+            echo "no";
+        }
+        
     }
 }
