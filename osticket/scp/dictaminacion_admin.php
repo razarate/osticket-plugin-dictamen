@@ -117,7 +117,7 @@ if ($thisstaff && $thisstaff->isAdmin()) {
 	</thead>
 	<tbody>
 		<?php
-		$sql = "SELECT ticket_id, number FROM " . $TABLE_PREFIX . "ticket";
+		$sql = "SELECT ticket_id, number FROM " . $TABLE_PREFIX . "ticket WHERE status_id=1";
 		$res = db_query($sql);
 
 		while ($row = db_fetch_array($res)) {

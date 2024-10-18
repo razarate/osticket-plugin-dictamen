@@ -93,7 +93,7 @@ if ($estado_id == 2) {
 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-	print_r($_POST);
+	//print_r($_POST);
 	$pruebas = intval($_POST['prueba']);
 	$ticket_id = intval($_POST['ticket_id']);
 	$id_estado = intval($_POST['estado_id']);
@@ -102,11 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	$agentes_seleccionados = $_POST['opciones'];
 	$agentes_anteriores = $_POST['anteriores'];
 	if ($id_estado == 3) {
-		if($pruebas == 0){
-			echo "no";
-		}else{
-			echo "si";
-		}
+		
 		if ($pruebas == 1) {
 			// Eliminar el último registro de la base de datos para el ticket actual
 			$sql_eliminar_ultimo = "DELETE FROM " . $TABLE_PREFIX . "dictaminacion_asignaciones WHERE id_ticket = $ticket_id ORDER BY id_asignacion DESC LIMIT 1";
