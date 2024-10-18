@@ -3,8 +3,8 @@
 return array(
     'files' => array(
         'plugin.php',
-        'dictaminacion.php',
-        'nuevo.php'
+        'config.php',
+        'dictaminacion.php'
     ),
     'output' => 'dictaminacion.phar'
 );

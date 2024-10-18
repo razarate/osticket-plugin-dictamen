@@ -1,14 +1,14 @@
 <?php
-include('admin.inc.php');
+/* include('admin.inc.php');
 // Para depurar, podemos ver si está definido $thisstaff
 if (!defined('OSTSCPINC')) die('Acceso Denegado: No estás en el contexto del panel de control');
 if (!$thisstaff) {
     // Muestra información de la variable para depuración
     var_dump($thisstaff); 
     die('Acceso Denegado: Usuario no autorizado o no inicializado correctamente');
-}
+} */
 
-require_once(INCLUDE_DIR . 'class.plugin.php');
+/* require_once(INCLUDE_DIR . 'class.plugin.php');
 
 class DictaminacionPlugin extends Plugin {
     var $config_class = 'DictaminacionPluginConfig';
@@ -24,5 +24,16 @@ class DictaminacionPlugin extends Plugin {
             // Agregar el ítem de navegación al menú de administración
             Navigation::addNav('admin', 'nuevo', __('Nuevo'), 'nuevo.php');
         }
+    }
+} */
+
+require_once(INCLUDE_DIR . 'class.plugin.php');
+require_once('config.php');
+class DictaminacionPlugin extends Plugin {
+    var $config_class = 'DictaminacionPluginConfig';
+
+    function bootstrap() {
+        // Puedes añadir lógica si se necesita cuando el plugin esté activo
+        echo "ok";
     }
 }
