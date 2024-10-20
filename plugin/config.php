@@ -1,23 +1,37 @@
 <?php
-
-class DictaminacionPluginConfig extends PluginConfig {
-    function getOptions() {
+require_once('sentencias.php');
+class DictaminacionPluginConfig extends PluginConfig
+{
+    function getOptions()
+    {
         return array(
-            'hello_text' => new TextboxField(array(
-                'label' => 'Introduce un mensaje',
-                'configuration' => array('size' => 40),
+            'prefijo' => new TextboxField(array(
+                'label' => 'Introduzca el prefijo de tu base de datos. Regularmente es (ost_) en caso de no estar seguro contacte a su administrador',
+                'configuration' => array('size' => 20, 'maxlength' => 10),
                 'required' => true,
-            )),
+            ))
         );
     }
 
-    function pre_save(&$config, &$errors) {
-        // Esto se ejecuta cuando se guarda la instancia del plugin
-        $text_value = $config['hello_text']; // Captura el valor del campo de texto
-
-        // Para enviar el valor a la consola del navegador, usamos JavaScript
-        echo "<script>console.log('Hola, el valor ingresado es: " . addslashes($text_value) . "');</script>";
-
-        return true;
+    function pre_save(&$config, &$errors)
+    {
+        $prefijo = $config['prefijo'];
+        if ($this->crearTablas($prefijo)) {
+            return true;
+        } else {
+            return false;
+        }
     }
+    function crearTablas($prefijo)
+    {
+        $sentencias = new Sentencias($prefijo);
+        if (db_query('SELECT * FROM ' . $prefijo . 'ticket LIMIT 1')) {
+            $sentencias->generadorTablas();
+            return true;
+        } else {
+            echo "<script>alert('Parece que su prefijo no coincide con el de la base de datos.')</script>";
+            return false;
+        }
+    }
+    
 }

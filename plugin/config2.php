@@ -4,8 +4,17 @@ return array(
     'files' => array(
         'plugin.php',
         'config.php',
-        'dictaminacion.php'
+        'sentencias.php',
+        'archivosDictaminacion.php',
+        'dictaminacion_plugin.php',
+        'asignacion_dictamen.php',
+        'dictaminacion.php',
+        'dictaminacion_admin.php',
+        'configuracion_dictamen.php',
+        'formulario_dictamen.php',
+        'jspdf.plugin.autotable.min.js',
+        'jspdf.umd.min.js'
     ),
-    'output' => 'dictaminacion.phar'
+    'output' => '../osticket/include/plugins/dictaminacion.phar'
 );
 

@@ -2,11 +2,11 @@
 
 return array(
     'id' => 'osticket:dictaminacion',
-    'version' => '0.1',
+    'version' => '1.0',
     'name' => 'Dictaminación Plugin',
-    'author' => 'Innovación',
+    'author' => 'Santiago Chávez',
     'description' => 'Plugin para agregar funcionalidad de dictaminación en osTicket',
     'url' => '',
-    'plugin' => 'dictaminacion.php:DictaminacionPlugin',
+    'plugin' => 'dictaminacion_plugin.php:DictaminacionPlugin',
 );
 
