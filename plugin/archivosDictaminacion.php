@@ -10,6 +10,7 @@ class ArchivosDictaminacion
     private $asignacion_dictamen;
     private $libreria1;
     private $libreria2;
+    private $propiedades;
 
     public function __construct($ruta)
     {

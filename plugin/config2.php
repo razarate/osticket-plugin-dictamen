@@ -5,6 +5,7 @@ return array(
         'plugin.php',
         'config.php',
         'sentencias.php',
+        'navegacion.php',
         'archivosDictaminacion.php',
         'dictaminacion_plugin.php',
         'asignacion_dictamen.php',

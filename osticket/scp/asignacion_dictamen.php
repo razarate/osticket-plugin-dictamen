@@ -1,7 +1,7 @@
 <?php
-$TABLE_PREFIX = "ostck_";
 
 include('admin.inc.php');
+$TABLE_PREFIX = $GLOBALS['mi_prefijo_global']; 
 
 $nav->setTabActive('manage');
 

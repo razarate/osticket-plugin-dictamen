@@ -1,10 +1,9 @@
 <?php
-$TABLE_PREFIX = "ostck_";
-
 include('staff.inc.php');
-
+$TABLE_PREFIX = $GLOBALS['mi_prefijo_global']; ;
 $nav->setTabActive('dictaminacions');
 require_once(STAFFINC_DIR . 'header.inc.php');
+
 
 $agent_id = $thisstaff->getId();
 global $agent_id;

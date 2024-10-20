@@ -1,6 +1,8 @@
-<?php include('admin.inc.php');
-$TABLE_PREFIX = "ostck_";
+<?php 
+include('admin.inc.php');
+$TABLE_PREFIX = $GLOBALS['mi_prefijo_global']; 
 $nav->setTabActive('manage');
+require_once(INCLUDE_DIR . 'class.plugin.php');
 
 require(STAFFINC_DIR . 'header.inc.php');
 
@@ -9,6 +11,7 @@ global $esAdmin;
 if ($thisstaff && $thisstaff->isAdmin()) {
 	$esAdmin = true;
 }
+
 ?>
 
 <style>

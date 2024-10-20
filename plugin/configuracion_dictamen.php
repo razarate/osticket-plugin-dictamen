@@ -3,7 +3,7 @@ include('admin.inc.php');
 require(STAFFINC_DIR . 'header.inc.php');
 $nav->setTabActive('manage');
 
-$TABLE_PREFIX = "ostck_";
+$TABLE_PREFIX = $GLOBALS['mi_prefijo_global']; 
 $id_lista = 0;
 
 $sql_listas = "SELECT L.id AS lista_id, L.name AS lista_nombre 
