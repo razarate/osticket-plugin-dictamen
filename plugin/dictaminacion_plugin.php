@@ -10,8 +10,9 @@ class DictaminacionPlugin extends Plugin
 
     function bootstrap()
     {
-        $prefix = TABLE_PREFIX;
-        $GLOBALS['mi_prefijo_global'] = $prefix;
+        echo "hola";
+        $GLOBALS['mi_prefijo_global'] = $this->obtenerPrefijo();
+        echo $GLOBALS['mi_prefijo_global'];
     }
 
     function agregarNav(){

@@ -1,6 +1,6 @@
 <?php 
 include('admin.inc.php');
-$TABLE_PREFIX = $GLOBALS['mi_prefijo_global']; 
+$TABLE_PREFIX = 'ostck_'; 
 $nav->setTabActive('manage');
 require_once(INCLUDE_DIR . 'class.plugin.php');
 
