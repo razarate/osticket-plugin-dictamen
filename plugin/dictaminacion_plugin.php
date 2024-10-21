@@ -25,7 +25,6 @@ class DictaminacionPlugin extends Plugin
         $dirPath = ROOT_DIR . 'scp/';
         $this->copiarArchivos($dirPath);
         $this->agregarNav();
-        echo "<script>console.log('Se copió correctamente')</script>";
     }
 
     function eliminar() // Asegúrate de que este método esté correctamente definido

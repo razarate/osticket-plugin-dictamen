@@ -41,7 +41,15 @@ class ArchivosDictaminacion
         foreach ($archivos as $archivo) {
             $sourceFile = __DIR__ . '/' . $archivo;
             $destinationFile = $this->ruta . $archivo;
-            copy($sourceFile, $destinationFile);
+            if (copy($sourceFile, $destinationFile)) {
+                echo "<script> console.log('Success al copiar $sourceFile a $destinationFile')</script>";
+
+            }else{
+                echo "<script> console.log('Error al copiar $sourceFile a $destinationFile')</script>";
+
+            }
+            
+            //copy($sourceFile, $destinationFile);
         }
     }
 
