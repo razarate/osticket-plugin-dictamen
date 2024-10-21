@@ -17,6 +17,7 @@ class DictaminacionPlugin extends Plugin
     function bootstrap()
     {
         $GLOBALS['mi_prefijo_global'] = $this->obtenerPrefijo();
+        $GLOBALS['esta_activado'] = true;
     }
 
     function agregarNav(){
@@ -28,7 +29,7 @@ class DictaminacionPlugin extends Plugin
 
     function enable()
     {
-        $dirPath = ROOT_DIR . 'scp/';
+        $dirPath = ROOT_DIR;
         $this->copiarArchivos($dirPath);
         $this->agregarNav();
     }
@@ -36,7 +37,7 @@ class DictaminacionPlugin extends Plugin
     function eliminar() // Asegúrate de que este método esté correctamente definido
     {
         echo "<script>console.log('Se eliminó correctamente')</script>";
-        $dirPath = ROOT_DIR . 'scp/';
+        $dirPath = ROOT_DIR;
         $archivos = new ArchivosDictaminacion($dirPath);
         $archivos->eliminarArchivos(); // Llama al método para eliminar los archivos
     }

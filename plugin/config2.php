@@ -17,5 +17,6 @@ return array(
         'jspdf.umd.min.js'
     ),
     'output' => '../osticket/include/plugins/dictaminacion.phar'
+    //'output' => 'dictaminacion.phar'
 );
 

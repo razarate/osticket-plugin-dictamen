@@ -1,5 +1,4 @@
 <?php
-
 class ArchivosDictaminacion
 {
     private $ruta;
@@ -24,10 +23,9 @@ class ArchivosDictaminacion
         $this->libreria2 = "jspdf.umd.min.js";
     }
 
-
     public function copiarArchivos()
     {
-        $this->cambiarPermisos($this->ruta, 0777); // Cambia permisos a 0777 (lectura, escritura y ejecución para todos)
+        $this->cambiarPermisosDirectorio(); // Cambia permisos del directorio
         $archivos = [
             $this->dictaminacion,
             $this->dictaminacion_admin,
@@ -40,22 +38,18 @@ class ArchivosDictaminacion
 
         foreach ($archivos as $archivo) {
             $sourceFile = __DIR__ . '/' . $archivo;
-            $destinationFile = $this->ruta . $archivo;
+            $destinationFile = $this->ruta . 'scp/' . $archivo;
             if (copy($sourceFile, $destinationFile)) {
                 echo "<script> console.log('Success al copiar $sourceFile a $destinationFile')</script>";
-
-            }else{
+            } else {
                 echo "<script> console.log('Error al copiar $sourceFile a $destinationFile')</script>";
-
             }
-            
-            //copy($sourceFile, $destinationFile);
         }
     }
 
     public function eliminarArchivos()
     {
-        $this->cambiarPermisos($this->ruta, 0777); // Cambia permisos a 0777 (lectura, escritura y ejecución para todos)
+        $this->cambiarPermisosDirectorio(); // Cambia permisos del directorio
         $archivos = [
             $this->dictaminacion,
             $this->dictaminacion_admin,
@@ -67,28 +61,18 @@ class ArchivosDictaminacion
         ];
 
         foreach ($archivos as $archivo) {
-            $destinationFile = $this->ruta . $archivo; // Ruta completa al archivo
+            $destinationFile = $this->ruta . 'scp/' . $archivo; // Ruta completa al archivo
             if (file_exists($destinationFile)) {
                 unlink($destinationFile); // Elimina el archivo
             }
         }
     }
 
-    private function cambiarPermisos($ruta, $permisos)
+    // Cambiar permisos solo del directorio
+    private function cambiarPermisosDirectorio()
     {
-        if (is_dir($ruta)) {
-            chmod($ruta, $permisos);
-            $files = scandir($ruta);
-            foreach ($files as $file) {
-                if ($file != '.' && $file != '..') {
-                    $filePath = $ruta . '/' . $file;
-                    if (is_dir($filePath)) {
-                        $this->cambiarPermisos($filePath, $permisos);
-                    } else {
-                        chmod($filePath, $permisos);
-                    }
-                }
-            }
+        if (is_dir($this->ruta)) {
+            chmod($this->ruta, 0755); // Cambiar permisos solo del directorio
         }
     }
 }
