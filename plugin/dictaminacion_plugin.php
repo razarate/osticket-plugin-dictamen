@@ -4,6 +4,12 @@ require_once('config.php');
 require_once('archivosDictaminacion.php');
 require_once('navegacion.php');
 
+/* NOTA: PARA PODER MANEJAR CARPETAS Y ARCHIVOS DESDE EL PLUGIN A SU SISTEMA OSTICKET
+DEBERÁ TENER LOS SIGUIENTES PERMISOS:
+sudo chown -R www-data:www-data /ruta/al/directorio
+sudo chmod -R 755 /ruta/al/directorio
+ */
+
 class DictaminacionPlugin extends Plugin
 {
     var $config_class = 'DictaminacionPluginConfig';
