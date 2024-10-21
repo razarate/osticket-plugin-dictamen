@@ -10,7 +10,6 @@ class DictaminacionPlugin extends Plugin
 
     function bootstrap()
     {
-        echo "hola";
         $GLOBALS['mi_prefijo_global'] = $this->obtenerPrefijo();
         echo $GLOBALS['mi_prefijo_global'];
     }
