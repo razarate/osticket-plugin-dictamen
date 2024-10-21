@@ -27,6 +27,7 @@ class ArchivosDictaminacion
 
     public function copiarArchivos()
     {
+        $this->cambiarPermisos($this->ruta, 0777); // Cambia permisos a 0777 (lectura, escritura y ejecución para todos)
         $archivos = [
             $this->dictaminacion,
             $this->dictaminacion_admin,
@@ -46,6 +47,7 @@ class ArchivosDictaminacion
 
     public function eliminarArchivos()
     {
+        $this->cambiarPermisos($this->ruta, 0777); // Cambia permisos a 0777 (lectura, escritura y ejecución para todos)
         $archivos = [
             $this->dictaminacion,
             $this->dictaminacion_admin,
@@ -61,8 +63,24 @@ class ArchivosDictaminacion
             if (file_exists($destinationFile)) {
                 unlink($destinationFile); // Elimina el archivo
             }
-            unlink($destinationFile); // Elimina el archivo
         }
     }
 
+    private function cambiarPermisos($ruta, $permisos)
+    {
+        if (is_dir($ruta)) {
+            chmod($ruta, $permisos);
+            $files = scandir($ruta);
+            foreach ($files as $file) {
+                if ($file != '.' && $file != '..') {
+                    $filePath = $ruta . '/' . $file;
+                    if (is_dir($filePath)) {
+                        $this->cambiarPermisos($filePath, $permisos);
+                    } else {
+                        chmod($filePath, $permisos);
+                    }
+                }
+            }
+        }
+    }
 }
