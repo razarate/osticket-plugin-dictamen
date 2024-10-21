@@ -11,7 +11,6 @@ class DictaminacionPlugin extends Plugin
     function bootstrap()
     {
         $GLOBALS['mi_prefijo_global'] = $this->obtenerPrefijo();
-        echo $GLOBALS['mi_prefijo_global'];
     }
 
     function agregarNav(){
