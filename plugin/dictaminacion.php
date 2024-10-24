@@ -9,7 +9,11 @@ $agent_id = $thisstaff->getId();
 global $agent_id;
 
 if ($GLOBALS['esta_activado']) {
-    $sql = "SELECT t.ticket_id, t.number FROM " . $TABLE_PREFIX . "ticket t WHERE t.ticket_id IN (SELECT da.id_ticket FROM "  . $TABLE_PREFIX . "dictaminacion_asignaciones da WHERE da.id_staff ='$agent_id')";
+    $sql = "SELECT t.ticket_id, t.number 
+    FROM " . $TABLE_PREFIX . "ticket t 
+    WHERE t.ticket_id IN (
+    SELECT da.id_ticket FROM "  . $TABLE_PREFIX . "dictaminacion_asignaciones da 
+    WHERE da.id_staff ='$agent_id') ORDER BY t.lastupdate";
     $res = db_query($sql);
     $sql_opcionesAsignadas = db_query("SELECT * FROM " . $TABLE_PREFIX . "dictaminacion_opciones");
 
