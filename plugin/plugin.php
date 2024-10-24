@@ -6,7 +6,7 @@ return array(
     'name' => 'Dictaminación Plugin',
     'author' => 'Santiago Chávez',
     'description' => 'Plugin para agregar funcionalidad de dictaminación en osTicket',
-    'url' => '',
+    'url' => 'https://github.com/Santiago840/osticket-plugin-dictamen',
     'plugin' => 'dictaminacion_plugin.php:DictaminacionPlugin',
 );
 
