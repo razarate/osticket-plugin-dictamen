@@ -9,10 +9,6 @@ class DictaminacionPluginConfig extends PluginConfig
                 'label' => 'Introduzca el prefijo de tu base de datos. Regularmente es (ost_) en caso de no estar seguro contacte a su administrador',
                 'configuration' => array('size' => 20, 'maxlength' => 10),
                 'required' => true,
-            )),
-            'formulario' => new SelectionField(array(
-                'label' => 'Seleccione el nombre de la lista para la valoración global de su dictamen',
-                'required' => true
             ))
         );
     }
