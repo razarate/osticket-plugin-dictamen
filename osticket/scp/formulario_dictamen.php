@@ -212,12 +212,7 @@ if ($GLOBALS['esta_activado']) {
         // Rehacer la consulta para obtener las preguntas
         $preguntas = db_query($sql_form);
         echo "<table>";
-        echo "<thead>
-                <tr>
-                    <th>Aspecto a evaluar</th>
-                    <th>Respuesta</th>
-                </tr>
-            </thead>";
+        
         while ($fila = db_fetch_array($preguntas)) {
             $pregunta = $fila['label'];
             $pregunta_nombre = $fila['name'];
@@ -272,7 +267,12 @@ if ($GLOBALS['esta_activado']) {
                     }
                 }
             } elseif ($fila['type'] == 'info') {
-                echo "<td><label>" . $pregunta . "</label></td>";
+                echo "<thead>
+                <tr>
+                    <th id='t1'>$pregunta</th>
+                    <th id='t2'>Valoración</th>
+                </tr>
+            </thead>";
             }
 
             echo "</td>";
