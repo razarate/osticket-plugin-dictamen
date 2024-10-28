@@ -136,16 +136,17 @@ if ($GLOBALS['esta_activado']) {
 
         async function generarPdf(preguntas_json, ticket_number) {
             let preguntas = preguntas_json;
+            console.log(preguntas_json);
             const {
                 jsPDF
             } = window.jspdf;
 
             const doc = new jsPDF({
-                orientation: 'landscape',
+                orientation: 'horizontal',
                 unit: 'mm',
                 format: 'a4'
             });
-            doc.setFontSize(20);
+            doc.setFontSize(12);
 
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
@@ -162,67 +163,111 @@ if ($GLOBALS['esta_activado']) {
             doc.text(titulo1, titulo1X, 20);
             doc.text(titulo2, titulo2X, 30);
 
-            doc.setFontSize(18);
+            doc.setFontSize(11);
             const nombreTicket = "Evaluación del ticket #" + ticket_number;
-
             doc.text(nombreTicket, 15, 45);
 
-            const columns = ["ASPECTO A EVALUAR", "RESPUESTA"];
+            // Define the columns for the table
+            const columns = ["ASPECTO A EVALUAR", "VALORACIÓN"];
+            const rows = [];
 
-            const numFilas = preguntas.length;
-            const rows = preguntas.map(pregunta => [pregunta.pregunta_label, pregunta.respuesta]);
+            preguntas.forEach(pregunta => {
+                // Check if the response is equal to "titulo"
+                if (pregunta.respuesta === "titulo") {
+                    // Add a header row with the pregunta_label
+                    rows.push([{
+                        content: pregunta.pregunta_label,
+                        colSpan: 3,
+                        styles: {
+                            halign: 'center',
+                            fontStyle: 'bold',
+                            fillColor: [200, 200, 200]
+                        }
+                    }]);
+                } else {
+                    // Check if the pregunta_label contains "rec" to set the recommendation
+                    if (pregunta.pregunta.includes("rec")) {
+                        rows.push([{
+                            content: pregunta.respuesta,
+                            colSpan: 3,
+                            styles: {
+                                halign: 'justify', // Justify for the recommendations
+                                fontStyle: 'normal',
+                                fillColor: [240, 240, 240]
+                            }
+                        }]);
+                    } else {
+                        // Add regular question and response along with an empty recommendation
+                        rows.push([{
+                                content: pregunta.pregunta_label,
+                                styles: {
+                                    halign: 'justify'
+                                } // Justified
+                            },
+                            {
+                                content: pregunta.respuesta,
+                                styles: {
+                                    halign: 'center'
+                                } // Centered
+                            }
+                        ]);
+                    }
+                }
+            });
 
-            // Crear una copia de la tabla sin la penúltima fila
-            const rowsCopy = [...rows];
-            rowsCopy.splice(numFilas - 2, 1); // Eliminar la penúltima fila
-
-            if (rows[numFilas - 1][0] == 'Valoración Global') {
-                rows[numFilas - 1] = [rows[numFilas - 1][0], rows[numFilas - 1][1]];
-            }
-
-            // Generar la tabla de respuestas
+            // Generate the table of responses
             doc.autoTable({
                 head: [columns],
-                body: rowsCopy,
+                body: rows,
                 margin: {
                     top: 50
                 },
                 styles: {
-                    fontSize: 16,
-                    cellPadding: 5,
+                    fontSize: 11,
+                    cellPadding: 3,
                     textColor: [0, 0, 0],
-                    lineWidth: 0.75,
+                    lineWidth: 0.65,
                     lineColor: [0, 0, 0]
                 },
                 headStyles: {
                     halign: 'center',
+                },
+                columnStyles: {
+                    0: {
+                        halign: 'justify'
+                    }, // Justify "ASPECTO A EVALUAR"
+                    1: {
+                        halign: 'center'
+                    }, // Center "VALORACIÓN"
+                    2: {
+                        halign: 'justify'
+                    } // Justify "RECOMENDACIONES"
                 }
             });
 
-            // Salto de página para la última pregunta
-            doc.addPage(); // Añade una nueva página
+            // Add a section for "Fecha Nombre" and "Firma del Lector(a)"
+            const sectionY = doc.autoTable.previous.finalY + 40; // Get the position after the table
 
-            doc.setFontSize(18);
+            // Width for the underline spaces
+            const lineWidth = 50; // Adjust width for underline
+            const spaceBetween = 20; // Space between the two fields
 
-            if (rows[numFilas - 1]) {
-                const textoUltima = `${rows[numFilas - 2][0]}\n${rows[numFilas - 2][1]}`;
-                const marginLeft = 15;
-                const marginTop = 20; // Margen superior en la nueva página
-                const textWidth = pageWidth - (2 * marginLeft);
+            // Calculate center positions
+            const centerXNombre = (pageWidth / 2) - (lineWidth + spaceBetween / 2);
+            const centerXFirma = (pageWidth / 2) + (spaceBetween / 2);
 
-                const textLines = doc.splitTextToSize(textoUltima, textWidth);
+            // Draw lines above the fields
+            doc.line(centerXNombre, sectionY-10, centerXNombre + lineWidth, sectionY-10); // Line for "Lugar y fecha"
+            doc.line(centerXFirma, sectionY-10, centerXFirma + lineWidth, sectionY-10); // Line for "Nombre y firma del Lector(a)"
 
-                let posicionY = marginTop;
-                textLines.forEach(line => {
-                    if (posicionY + 10 > pageHeight) {
-                        doc.addPage();
-                        posicionY = 10;
-                    }
-                    doc.text(line, marginLeft, posicionY);
-                    posicionY += 10;
-                });
-            }
-
+            // Add text for "Lugar y fecha" and "Nombre y firma del Lector(a)"
+            doc.text("Lugar y fecha", centerXNombre + (lineWidth / 2), sectionY - 5, {
+                align: "center"
+            }); // Align text at the center of the line
+            doc.text("Nombre y firma del Lector(a)", centerXFirma + (lineWidth / 2), sectionY - 5, {
+                align: "center"
+            }); // Align text at the center of the line
+            // Save the PDF
             doc.save('Ticket_No.' + ticket_number + '_evaluación.pdf');
         }
     </script>
