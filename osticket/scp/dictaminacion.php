@@ -136,7 +136,7 @@ if ($GLOBALS['esta_activado']) {
 
         async function generarPdf(preguntas_json, ticket_number) {
             let preguntas = preguntas_json;
-            console.log(preguntas_json);
+            //console.log(preguntas_json);
             const {
                 jsPDF
             } = window.jspdf;
@@ -152,7 +152,7 @@ if ($GLOBALS['esta_activado']) {
             const pageHeight = doc.internal.pageSize.getHeight();
 
             const titulo1 = "BENEMÉRITA ESCUELA NORMAL VERACRUZANA ENRIQUE C. RÉBSAMEN.";
-            const titulo2 = "OFICINA DE INNOVACIÓN EDUCATIVA";
+            const titulo2 = "DEPARTAMENTO DE INVESTIGACIÓN E INNOVACIÓN EDUCATIVA.";
 
             const titulo1Width = doc.getTextWidth(titulo1);
             const titulo2Width = doc.getTextWidth(titulo2);
