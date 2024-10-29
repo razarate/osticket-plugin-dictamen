@@ -219,7 +219,7 @@ if ($GLOBALS['esta_activado']) {
                     alert("Por favor, llene los campos vacíos.");
                 } else {
                     document.getElementById('dictForm').submit();
-                } 
+                }
             }
         }
     </script>

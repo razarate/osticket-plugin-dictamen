@@ -230,15 +230,10 @@ if ($GLOBALS['esta_activado']) {
 
 			<?php
 			if ($estado_id == 0) {
-				$sql = "SELECT staff_id, firstname, lastname, username 
-				FROM " . $TABLE_PREFIX . "staff 
-				WHERE isactive=1 
-				ORDER BY firstname ASC";
+				$sql = "SELECT staff_id, firstname, lastname, username FROM " . $TABLE_PREFIX . "staff WHERE isactive=1";
 				$staffs = db_query($sql);
 			} else {
-				$sql = "SELECT staff_id, firstname, lastname, username 
-				FROM " . $TABLE_PREFIX . "staff 
-				ORDER BY firstname ASC";
+				$sql = "SELECT staff_id, firstname, lastname, username FROM " . $TABLE_PREFIX . "staff";
 				$staffs = db_query($sql);
 			}
 

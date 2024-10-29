@@ -20,12 +20,13 @@ class DictaminacionPlugin extends Plugin
         $GLOBALS['esta_activado'] = true;
     }
 
-    function agregarNav(){
+    function agregarNav()
+    {
         $nav = new Navegacion();
         $dirPath = INCLUDE_DIR;
         $nav->agregarNav($dirPath);
     }
-  
+
 
     function enable()
     {
@@ -33,6 +34,7 @@ class DictaminacionPlugin extends Plugin
         $this->copiarArchivos($dirPath);
         $this->agregarNav();
     }
+
 
     function eliminar() // Asegúrate de que este método esté correctamente definido
     {
@@ -54,7 +56,4 @@ class DictaminacionPlugin extends Plugin
         $archivos = new ArchivosDictaminacion($dirPath);
         $archivos->copiarArchivos();
     }
-    
 }
-
-

@@ -122,7 +122,10 @@ if ($GLOBALS['esta_activado']) {
 		</thead>
 		<tbody>
 			<?php
-			$sql = "SELECT ticket_id, number FROM " . $TABLE_PREFIX . "ticket WHERE status_id=1";
+			$sql = "SELECT ticket_id, number 
+			FROM " . $TABLE_PREFIX . "ticket 
+			WHERE status_id=1 
+			ORDER BY lastupdate DESC";
 			$res = db_query($sql);
 
 			while ($row = db_fetch_array($res)) {

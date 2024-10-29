@@ -44,6 +44,7 @@ if ($GLOBALS['esta_activado']) {
         }
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $ticket_id = intval($_POST['ticket_id']);
+            //print_r($_POST);
             // Verifica si ya existe un registro en ost_dictaminacion para el ticket y el staff
             $check_dictaminacion = db_query("SELECT * FROM " . $TABLE_PREFIX . "dictaminacion WHERE id_ticket = $ticket_id AND id_staff = $staff_id");
             if (db_num_rows($check_dictaminacion) == 0) {
@@ -199,25 +200,39 @@ if ($GLOBALS['esta_activado']) {
             window.location.href = 'dictaminacion.php';
         }
 
-        /*function confirmarEnvio() {
-            return confirm("¿Está seguro de guardar? No se podrán efectuar cambios una vez realizada la operación.");
-        }*/
+        function confirmarEnvio() {
+            // Mostrar alerta de confirmación
+            if (confirm("¿Está seguro de guardar? No se podrán efectuar cambios una vez realizada la operación.")) {
+                // Validar los campos textarea
+                var valid = true;
+                var textareas = document.querySelectorAll('textarea');
+                textareas.forEach(function(textarea) {
+                    if (textarea.value.trim() === '') {
+                        valid = false;
+                        textarea.style.borderColor = 'red'; // Opcional: resaltar el campo vacío
+                    } else {
+                        textarea.style.borderColor = ''; // Restablecer el color si se llena
+                    }
+                });
+
+                if (!valid) {
+                    alert("Por favor, llene los campos vacíos.");
+                } else {
+                    document.getElementById('dictForm').submit();
+                }
+            }
+        }
     </script>
 
-    <form class="dynamic-form" method="post">
+    <form class="dynamic-form" id="dictForm" method="post">
         <input type="hidden" name="ticket_id" value="<?php echo $ticket_id; ?>">
         <?php
         csrf_token();
-
+        $conteo = 0;
         // Rehacer la consulta para obtener las preguntas
         $preguntas = db_query($sql_form);
         echo "<table>";
-        echo "<thead>
-                <tr>
-                    <th>Aspecto a evaluar</th>
-                    <th>Respuesta</th>
-                </tr>
-            </thead>";
+
         while ($fila = db_fetch_array($preguntas)) {
             $pregunta = $fila['label'];
             $pregunta_nombre = $fila['name'];
@@ -255,9 +270,10 @@ if ($GLOBALS['esta_activado']) {
 
                 echo "</select></br></br>";
             } elseif ($fila['type'] == 'memo') {
-                echo "<td class='lb_preguntas'><label for=" . $pregunta_nombre . ">" . $pregunta . "</label></td>";
+                $conteo++;
+                echo "<td class='lb_preguntas'><label for='rec$conteo'>" . $pregunta . "</label></td>";
                 echo "<td>";
-                echo "<textarea id=" . $pregunta_nombre . " name=" . $pregunta_nombre . " rows ='10' cols='50'></textarea>";
+                echo "<textarea id=" . $pregunta_nombre . " name='rec$conteo' rows ='10' cols='50'></textarea>";
 
                 if ($estatus) {
                     $sql_opciones = "SELECT respuesta FROM " . $TABLE_PREFIX . "dictaminacion_respuestas WHERE id_ticket=$ticket_id AND id_staff=$staff_id AND pregunta='$pregunta_nombre'";
@@ -272,7 +288,13 @@ if ($GLOBALS['esta_activado']) {
                     }
                 }
             } elseif ($fila['type'] == 'info') {
-                echo "<td><label>" . $pregunta . "</label></td>";
+                echo "
+                 <input type='hidden' name='$pregunta_nombre' value='titulo'><thead>
+                <tr>
+                    <th id='t1'>$pregunta</th>
+                    <th id='t2'>Valoración</th>
+                </tr>
+            </thead>";
             }
 
             echo "</td>";
@@ -311,7 +333,7 @@ if ($GLOBALS['esta_activado']) {
         if ($estatus) { ?>
             <input type="button" value="Volver" onclick="volver()">
         <?php } else { ?>
-            <input type="submit" value="Guardar">
+            <input type="button" value="Guardar" onclick="confirmarEnvio()">
             <input type="button" value="Cancelar" onclick="volver()">
         <?php } ?>
     </form>
