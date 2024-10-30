@@ -274,8 +274,9 @@ if ($GLOBALS['esta_activado']) {
             doc.save('Ticket_No.' + ticket_number + '_evaluación.pdf');
         }
          */
-        function generarPdf() {
-
+        function generarPdf(preguntas_json, ticket_number) {
+            let preguntas = preguntas_json;
+            console.log(preguntas);
 
             // Cargar el archivo usando fetch
             fetch('investigacion.docx')
@@ -284,17 +285,31 @@ if ($GLOBALS['esta_activado']) {
                     const reader = new FileReader();
 
                     reader.onload = function(event) {
-                        // Cargar el archivo en PizZip
                         const zip = new PizZip(event.target.result);
                         const doc = new window.docxtemplater().loadZip(zip);
 
-                        // Reemplazar marcadores con los datos
-                        const data = {
-                            nombre: "nombre" // Cambia este texto al que necesites
+                        // Crear un objeto datos que contendrá el número de ticket y todas las preguntas
+                        const datos = {
+                            ticket: ticket_number // Añade el número de ticket a los datos
                         };
-                        doc.setData({
-                            nombre: "nombre"
+
+                        // Recorrer las preguntas y configurar cada una con sus placeholders {p1}, {p2}, etc.
+                        preguntas.forEach((pregunta, index) => {
+                            const placeholder = pregunta.pregunta;
+                            // Obtener el label como a1, t1, etc.
+                            // Verificar si el placeholder empieza con "a"
+                            if (placeholder && placeholder.startsWith("r")) {
+                                datos[placeholder] = pregunta.respuesta || ""; // Añadir cada pregunta con su respectivo placeholder si empieza con "a"
+                                console.log(`Placeholder ${placeholder} agregado con respuesta: ${pregunta.respuesta || ""}`);
+                            } else if (placeholder && placeholder.startsWith("a")){
+                                datos[placeholder] = pregunta.respuesta || "";
+                            }else if(placeholder && placeholder.startsWith("t")){
+                                datos[placeholder] = pregunta.pregunta_label || "";
+                            }
                         });
+
+                        // Ahora que datos contiene todos los placeholders necesarios, se configura en doc
+                        doc.setData(datos);
 
                         try {
                             // Renderizar el documento

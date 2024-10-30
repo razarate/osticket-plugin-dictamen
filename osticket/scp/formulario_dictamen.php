@@ -44,7 +44,7 @@ if ($GLOBALS['esta_activado']) {
         }
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $ticket_id = intval($_POST['ticket_id']);
-            //print_r($_POST);
+            print_r($_POST);
             // Verifica si ya existe un registro en ost_dictaminacion para el ticket y el staff
             $check_dictaminacion = db_query("SELECT * FROM " . $TABLE_PREFIX . "dictaminacion WHERE id_ticket = $ticket_id AND id_staff = $staff_id");
             if (db_num_rows($check_dictaminacion) == 0) {
@@ -228,11 +228,12 @@ if ($GLOBALS['esta_activado']) {
         <input type="hidden" name="ticket_id" value="<?php echo $ticket_id; ?>">
         <?php
         csrf_token();
-        $conteo = 0;
+        $conteo = 8;
+        $conteo_titulo = 0;
         // Rehacer la consulta para obtener las preguntas
         $preguntas = db_query($sql_form);
         echo "<table>";
-
+        $pregunta_lista = "";
         while ($fila = db_fetch_array($preguntas)) {
             $pregunta = $fila['label'];
             $pregunta_nombre = $fila['name'];
@@ -241,8 +242,9 @@ if ($GLOBALS['esta_activado']) {
 
             if (strpos($fila['type'], 'list-') === 0) {
                 // Aquí extraes el ID de la lista directamente del nombre, después de 'list-'
+                $pregunta_lista = $pregunta_nombre;
                 $list_id = intval(str_replace('list-', '', $fila['type']));
-                echo "<td class='lb_preguntas'><label for=" . $pregunta_nombre . ">" . $pregunta . "</label></td>";
+                echo "<td class='lb_preguntas'><label id='$pregunta_nombre' for=" . $pregunta_nombre . ">" . $pregunta . "</label></td>";
                 echo "<td>";
                 echo "<select class='items' id=" . $pregunta_nombre . " name=" . $pregunta_nombre . ">";
 
@@ -271,9 +273,9 @@ if ($GLOBALS['esta_activado']) {
                 echo "</select></br></br>";
             } elseif ($fila['type'] == 'memo') {
                 $conteo++;
-                echo "<td class='lb_preguntas'><label for='rec$conteo'>" . $pregunta . "</label></td>";
+                echo "<td class='lb_preguntas'><label for='$pregunta_nombre'>" . $pregunta . "</label></td>";
                 echo "<td>";
-                echo "<textarea id=" . $pregunta_nombre . " name='rec$conteo' rows ='10' cols='50'></textarea>";
+                echo "<textarea id=" . $pregunta_nombre . " name='$pregunta_nombre' rows ='10' cols='50'></textarea>";
 
                 if ($estatus) {
                     $sql_opciones = "SELECT respuesta FROM " . $TABLE_PREFIX . "dictaminacion_respuestas WHERE id_ticket=$ticket_id AND id_staff=$staff_id AND pregunta='$pregunta_nombre'";
@@ -288,8 +290,12 @@ if ($GLOBALS['esta_activado']) {
                     }
                 }
             } elseif ($fila['type'] == 'info') {
+                echo "<script>document.getElementById($pregunta_lista).innerText='asdasdsa';</script>";
+                echo "<td class='lb_preguntas'><label for=" . $pregunta_nombre . ">" . $pregunta . "</label></td>";
+            } elseif ($fila['type'] == 'break') {
+                $conteo_titulo++;
                 echo "
-                 <input type='hidden' name='$pregunta_nombre' value='titulo'><thead>
+                 <input type='hidden' name='$pregunta_nombre' value='$pregunta'><thead>
                 <tr>
                     <th id='t1'>$pregunta</th>
                     <th id='t2'>Valoración</th>
