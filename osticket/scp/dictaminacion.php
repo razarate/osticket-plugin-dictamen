@@ -126,6 +126,9 @@ if ($GLOBALS['esta_activado']) {
         }
     </style>
 
+    <script src="FileSaver.min.js"></script>
+    <script src="pizzip.min.js"></script>
+    <script src="docxtemplater.min.js"></script>
     <script src="jspdf.umd.min.js"></script>
     <script src="jspdf.plugin.autotable.min.js"></script>
     <script>
@@ -134,7 +137,7 @@ if ($GLOBALS['esta_activado']) {
             window.location.href = 'dictaminacion.php';
         }
 
-        async function generarPdf(preguntas_json, ticket_number) {
+        /* async function generarPdf(preguntas_json, ticket_number) {
             let preguntas = preguntas_json;
             //console.log(preguntas_json);
             const {
@@ -257,8 +260,8 @@ if ($GLOBALS['esta_activado']) {
             const centerXFirma = (pageWidth / 2) + (spaceBetween / 2);
 
             // Draw lines above the fields
-            doc.line(centerXNombre, sectionY-10, centerXNombre + lineWidth, sectionY-10); // Line for "Lugar y fecha"
-            doc.line(centerXFirma, sectionY-10, centerXFirma + lineWidth, sectionY-10); // Line for "Nombre y firma del Lector(a)"
+            doc.line(centerXNombre, sectionY - 10, centerXNombre + lineWidth, sectionY - 10); // Line for "Lugar y fecha"
+            doc.line(centerXFirma, sectionY - 10, centerXFirma + lineWidth, sectionY - 10); // Line for "Nombre y firma del Lector(a)"
 
             // Add text for "Lugar y fecha" and "Nombre y firma del Lector(a)"
             doc.text("Lugar y fecha", centerXNombre + (lineWidth / 2), sectionY - 5, {
@@ -269,6 +272,53 @@ if ($GLOBALS['esta_activado']) {
             }); // Align text at the center of the line
             // Save the PDF
             doc.save('Ticket_No.' + ticket_number + '_evaluación.pdf');
+        }
+         */
+        function generarPdf() {
+
+
+            // Cargar el archivo usando fetch
+            fetch('investigacion.docx')
+                .then(response => response.blob())
+                .then(blob => {
+                    const reader = new FileReader();
+
+                    reader.onload = function(event) {
+                        // Cargar el archivo en PizZip
+                        const zip = new PizZip(event.target.result);
+                        const doc = new window.docxtemplater().loadZip(zip);
+
+                        // Reemplazar marcadores con los datos
+                        const data = {
+                            nombre: "nombre" // Cambia este texto al que necesites
+                        };
+                        doc.setData({
+                            nombre: "nombre"
+                        });
+
+                        try {
+                            // Renderizar el documento
+                            doc.render();
+                        } catch (error) {
+                            console.error("Error al renderizar el documento:", error);
+                            if (error.properties) {
+                                console.error("Detalles del error de plantilla:", error.properties);
+                            }
+                            return;
+                        }
+
+                        // Generar el archivo de salida
+                        const output = doc.getZip().generate({
+                            type: "blob"
+                        });
+                        saveAs(output, "documento_modificado.docx"); // Guardar el archivo modificado
+                    };
+
+                    reader.readAsBinaryString(blob);
+                })
+                .catch(error => {
+                    console.error("Error al cargar el archivo:", error);
+                });
         }
     </script>
 
