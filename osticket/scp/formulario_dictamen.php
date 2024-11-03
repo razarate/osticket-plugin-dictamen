@@ -228,12 +228,10 @@ if ($GLOBALS['esta_activado']) {
         <input type="hidden" name="ticket_id" value="<?php echo $ticket_id; ?>">
         <?php
         csrf_token();
-        $conteo = 8;
-        $conteo_titulo = 0;
+        $pregunta_info;
         // Rehacer la consulta para obtener las preguntas
         $preguntas = db_query($sql_form);
         echo "<table>";
-        $pregunta_lista = "";
         while ($fila = db_fetch_array($preguntas)) {
             $pregunta = $fila['label'];
             $pregunta_nombre = $fila['name'];
@@ -242,9 +240,8 @@ if ($GLOBALS['esta_activado']) {
 
             if (strpos($fila['type'], 'list-') === 0) {
                 // Aquí extraes el ID de la lista directamente del nombre, después de 'list-'
-                $pregunta_lista = $pregunta_nombre;
                 $list_id = intval(str_replace('list-', '', $fila['type']));
-                echo "<td class='lb_preguntas'><label id='$pregunta_nombre' for=" . $pregunta_nombre . ">" . $pregunta . "</label></td>";
+                echo "<td class='lb_preguntas'><label for=" . $pregunta_nombre . ">" . $pregunta_info . "</label></td>";
                 echo "<td>";
                 echo "<select class='items' id=" . $pregunta_nombre . " name=" . $pregunta_nombre . ">";
 
@@ -264,21 +261,21 @@ if ($GLOBALS['esta_activado']) {
                     if ($resultante = db_fetch_array($opcion_seleccionada)) {
                         $claro = $resultante['respuesta'];
                         echo "<script>
-                    document.getElementById('$pregunta_nombre').value = '$claro';
-                    document.getElementById('$pregunta_nombre').disabled = true;
-                    </script>";
+                        document.getElementById('$pregunta_nombre').value = '$claro';
+                        document.getElementById('$pregunta_nombre').disabled = true;
+                        </script>";
                     }
                 }
 
                 echo "</select></br></br>";
             } elseif ($fila['type'] == 'memo') {
-                $conteo++;
                 echo "<td class='lb_preguntas'><label for='$pregunta_nombre'>" . $pregunta . "</label></td>";
                 echo "<td>";
                 echo "<textarea id=" . $pregunta_nombre . " name='$pregunta_nombre' rows ='10' cols='50'></textarea>";
 
                 if ($estatus) {
-                    $sql_opciones = "SELECT respuesta FROM " . $TABLE_PREFIX . "dictaminacion_respuestas WHERE id_ticket=$ticket_id AND id_staff=$staff_id AND pregunta='$pregunta_nombre'";
+                    $sql_opciones = "SELECT respuesta FROM " . $TABLE_PREFIX . "dictaminacion_respuestas 
+                    WHERE id_ticket=$ticket_id AND id_staff=$staff_id AND pregunta='$pregunta_nombre'";
                     $opcion_seleccionada = db_query($sql_opciones);
                     if ($resultante = db_fetch_array($opcion_seleccionada)) {
                         $claro = htmlspecialchars($resultante['respuesta'], ENT_QUOTES, 'UTF-8');
@@ -290,10 +287,10 @@ if ($GLOBALS['esta_activado']) {
                     }
                 }
             } elseif ($fila['type'] == 'info') {
-                echo "<script>document.getElementById($pregunta_lista).innerText='asdasdsa';</script>";
-                echo "<td class='lb_preguntas'><label for=" . $pregunta_nombre . ">" . $pregunta . "</label></td>";
+                $pregunta_info = $pregunta;
+                echo "
+                 <input type='hidden' name='$pregunta_nombre' value='$pregunta'><thead>";
             } elseif ($fila['type'] == 'break') {
-                $conteo_titulo++;
                 echo "
                  <input type='hidden' name='$pregunta_nombre' value='$pregunta'><thead>
                 <tr>

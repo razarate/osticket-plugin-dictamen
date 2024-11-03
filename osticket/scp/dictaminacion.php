@@ -137,7 +137,7 @@ if ($GLOBALS['esta_activado']) {
             window.location.href = 'dictaminacion.php';
         }
 
-        /* async function generarPdf(preguntas_json, ticket_number) {
+        async function generarPdf(preguntas_json, ticket_number) {
             let preguntas = preguntas_json;
             //console.log(preguntas_json);
             const {
@@ -174,22 +174,37 @@ if ($GLOBALS['esta_activado']) {
             const columns = ["ASPECTO A EVALUAR", "VALORACIÓN"];
             const rows = [];
 
+            var preguntaInfo = '';
+
             preguntas.forEach(pregunta => {
-                // Check if the response is equal to "titulo"
-                if (pregunta.respuesta === "titulo") {
-                    // Add a header row with the pregunta_label
+                if (pregunta.pregunta == "valoracion") {
                     rows.push([{
-                        content: pregunta.pregunta_label,
-                        colSpan: 3,
-                        styles: {
-                            halign: 'center',
-                            fontStyle: 'bold',
-                            fillColor: [200, 200, 200]
+                            content: pregunta.pregunta_label,
+                            styles: {
+                                halign: 'justify'
+                            } // Justified
+                        },
+                        {
+                            content: pregunta.respuesta,
+                            styles: {
+                                halign: 'center'
+                            } // Centered
                         }
-                    }]);
+                    ]);
                 } else {
-                    // Check if the pregunta_label contains "rec" to set the recommendation
-                    if (pregunta.pregunta.includes("rec")) {
+                    if (pregunta.pregunta.includes("t")) {
+                        // Add a header row with the pregunta_label
+                        rows.push([{
+                            content: pregunta.pregunta_label,
+                            colSpan: 3,
+                            styles: {
+                                halign: 'center',
+                                fontStyle: 'bold',
+                                fillColor: [200, 200, 200]
+                            }
+                        }]);
+                    } else if (pregunta.pregunta.includes("r")) {
+                        // Check if the pregunta_label contains "rec" to set the recommendation
                         rows.push([{
                             content: pregunta.respuesta,
                             colSpan: 3,
@@ -199,10 +214,12 @@ if ($GLOBALS['esta_activado']) {
                                 fillColor: [240, 240, 240]
                             }
                         }]);
-                    } else {
+                    } else if (pregunta.pregunta.includes("p")) {
+                        preguntaInfo = pregunta.respuesta;
+                    } else if (pregunta.pregunta.includes("a")) {
                         // Add regular question and response along with an empty recommendation
                         rows.push([{
-                                content: pregunta.pregunta_label,
+                                content: preguntaInfo,
                                 styles: {
                                     halign: 'justify'
                                 } // Justified
@@ -215,7 +232,10 @@ if ($GLOBALS['esta_activado']) {
                             }
                         ]);
                     }
+
                 }
+                // Check if the response is equal to "titulo"
+
             });
 
             // Generate the table of responses
@@ -273,8 +293,8 @@ if ($GLOBALS['esta_activado']) {
             // Save the PDF
             doc.save('Ticket_No.' + ticket_number + '_evaluación.pdf');
         }
-         */
-        function generarPdf(preguntas_json, ticket_number) {
+
+        function generarWord(preguntas_json, ticket_number) {
             let preguntas = preguntas_json;
             console.log(preguntas);
 
@@ -301,10 +321,14 @@ if ($GLOBALS['esta_activado']) {
                             if (placeholder && placeholder.startsWith("r")) {
                                 datos[placeholder] = pregunta.respuesta || ""; // Añadir cada pregunta con su respectivo placeholder si empieza con "a"
                                 console.log(`Placeholder ${placeholder} agregado con respuesta: ${pregunta.respuesta || ""}`);
-                            } else if (placeholder && placeholder.startsWith("a")){
+                            } else if (placeholder && placeholder.startsWith("a")) {
                                 datos[placeholder] = pregunta.respuesta || "";
-                            }else if(placeholder && placeholder.startsWith("t")){
+                            } else if (placeholder && placeholder.startsWith("t")) {
                                 datos[placeholder] = pregunta.pregunta_label || "";
+                            } else if (placeholder && placeholder.startsWith("p")) {
+                                datos[placeholder] = pregunta.respuesta || "";
+                            } else if (placeholder && placeholder.startsWith("v")) {
+                                datos[placeholder] = pregunta.respuesta || "";
                             }
                         });
 
@@ -326,7 +350,7 @@ if ($GLOBALS['esta_activado']) {
                         const output = doc.getZip().generate({
                             type: "blob"
                         });
-                        saveAs(output, "documento_modificado.docx"); // Guardar el archivo modificado
+                        saveAs(output, 'Ticket_No.' + ticket_number + '_evaluación.docx'); // Guardar el archivo modificado
                     };
 
                     reader.readAsBinaryString(blob);
@@ -350,7 +374,8 @@ if ($GLOBALS['esta_activado']) {
                 <tr>
                     <th>Ticket</th>
                     <th>Estado</th>
-                    <th>Exportar</th>
+                    <th>Exportar en: </th>
+                    <th>Exportar en: </th>
                 </tr>
             </thead>
             <tbody>
@@ -379,9 +404,11 @@ if ($GLOBALS['esta_activado']) {
                     }
                     if (db_num_rows($estado) == 1) {
                         echo "<td>Evaluado</td>";
+                        echo "<td><input type='button' value='WORD' onclick='generarWord($preguntas_json, $ticket_number)'></td>";
                         echo "<td><input type='button' value='PDF' onclick='generarPdf($preguntas_json, $ticket_number)'></td>";
                     } elseif (db_num_rows($estado) == 0) {
                         echo "<td>Pendiente</td>";
+                        echo "<td><input type='button' value='WORD' onclick='generarWord($preguntas_json, $ticket_number)' disabled></td>";
                         echo "<td><input type='button' value='PDF' onclick='generarPdf($preguntas_json, $ticket_number)' disabled></td>";
                     }
                     echo "</tr>";
