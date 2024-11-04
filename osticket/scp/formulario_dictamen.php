@@ -44,31 +44,31 @@ if ($GLOBALS['esta_activado']) {
         }
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $ticket_id = intval($_POST['ticket_id']);
-            //print_r($_POST);
+            print_r($_POST);
             // Verifica si ya existe un registro en ost_dictaminacion para el ticket y el staff
             $check_dictaminacion = db_query("SELECT * FROM " . $TABLE_PREFIX . "dictaminacion WHERE id_ticket = $ticket_id AND id_staff = $staff_id");
-            if (db_num_rows($check_dictaminacion) == 0) {
-                foreach ($_POST as $key => $value) {
-                    $pregunta_id = htmlspecialchars($key);
-                    $respuesta = htmlspecialchars($value);
+                if (db_num_rows($check_dictaminacion) == 0) {
+                    foreach ($_POST as $key => $value) {
+                        $pregunta_id = htmlspecialchars($key);
+                        $respuesta = htmlspecialchars($value);
 
-                    if (in_array($respuesta, $opciones_correctas)) {
-                        $valoracion = 1;
-                    } else {
-                        $valoracion = 0;
-                    }
-
-                    if ($pregunta_id != 'ticket_id' && $pregunta_id != '__CSRFToken__') {
-                        $pregunta_label = isset($preguntas_labels[$pregunta_id]) ? $preguntas_labels[$pregunta_id] : '';
-                        if ($pregunta_label == '') {
-                            $pregunta_label = 'Valoración Global';
+                        if (in_array($respuesta, $opciones_correctas)) {
+                            $valoracion = 1;
+                        } else {
+                            $valoracion = 0;
                         }
-                        $stmt_respuesta = db_query("INSERT INTO " . $TABLE_PREFIX . "dictaminacion_respuestas (id_staff, id_ticket, pregunta, pregunta_label, respuesta) VALUES ($staff_id, $ticket_id, '$pregunta_id', '$pregunta_label', '$respuesta')");
-                    }
-                }
 
-                $stmt_estado = db_query("INSERT INTO " . $TABLE_PREFIX . "dictaminacion(id_staff, id_ticket, id_estado, id_valoracion) VALUES ($staff_id, $ticket_id, 1, $valoracion)");
-            }
+                        if ($pregunta_id != 'ticket_id' && $pregunta_id != '__CSRFToken__') {
+                            $pregunta_label = isset($preguntas_labels[$pregunta_id]) ? $preguntas_labels[$pregunta_id] : '';
+                            if ($pregunta_label == '') {
+                                $pregunta_label = 'Valoración Global';
+                            }
+                            $stmt_respuesta = db_query("INSERT INTO " . $TABLE_PREFIX . "dictaminacion_respuestas (id_staff, id_ticket, pregunta, pregunta_label, respuesta) VALUES ($staff_id, $ticket_id, '$pregunta_id', '$pregunta_label', '$respuesta')");
+                        }
+                    }
+
+                    $stmt_estado = db_query("INSERT INTO " . $TABLE_PREFIX . "dictaminacion(id_staff, id_ticket, id_estado, id_valoracion) VALUES ($staff_id, $ticket_id, 1, $valoracion)");
+                }
         }
 
         if (isset($_GET['id'])) {
@@ -235,6 +235,8 @@ if ($GLOBALS['esta_activado']) {
         while ($fila = db_fetch_array($preguntas)) {
             $pregunta = $fila['label'];
             $pregunta_nombre = $fila['name'];
+            $pregunta_conf =  json_decode($fila['configuration'], true);
+            $contenido = htmlspecialchars_decode($pregunta_conf['content']);
 
             echo "<tr>";
 
@@ -287,9 +289,9 @@ if ($GLOBALS['esta_activado']) {
                     }
                 }
             } elseif ($fila['type'] == 'info') {
-                $pregunta_info = $pregunta;
+                $pregunta_info = $contenido;
                 echo "
-                 <input type='hidden' name='$pregunta_nombre' value='$pregunta'><thead>";
+                 <input type='hidden' name='$pregunta_nombre' value='$pregunta_info'><thead>";
             } elseif ($fila['type'] == 'break') {
                 echo "
                  <input type='hidden' name='$pregunta_nombre' value='$pregunta'><thead>

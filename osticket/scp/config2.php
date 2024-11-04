@@ -20,7 +20,7 @@ return array(
         'docxtemplater.min.js',
         'investigacion.docx'
     ),
-    //'output' => '../osticket/include/plugins/dictaminacion.phar'
-    'output' => 'dictaminacion.phar'
+    'output' => '../osticket/include/plugins/dictaminacion.phar'
+    //'output' => 'dictaminacion.phar'
 );
 

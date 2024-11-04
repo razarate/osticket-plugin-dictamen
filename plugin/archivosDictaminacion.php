@@ -11,6 +11,7 @@ class ArchivosDictaminacion
     private $libreria2;
     private $libreria3;
     private $libreria4;
+    private $libreria5;
     private $propiedades;
     private $word;
 
@@ -26,6 +27,7 @@ class ArchivosDictaminacion
         $this->libreria2 = "jspdf.umd.min.js";
         $this->libreria3 = "pizzip.min.js";
         $this->libreria4 = "FileSaver.min.js";
+        $this->libreria5 = "docxtemplater.min.js";
         $this->word = "investigacion.docx";
     }
 
@@ -42,6 +44,7 @@ class ArchivosDictaminacion
             $this->libreria2,
             $this->libreria3,
             $this->libreria4,
+            $this->libreria5,
             $this->word
         ];
 
@@ -69,6 +72,7 @@ class ArchivosDictaminacion
             $this->libreria2,
             $this->libreria3,
             $this->libreria4,
+            $this->libreria5,
             $this->word
         ];
 

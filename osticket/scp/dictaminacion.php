@@ -137,6 +137,15 @@ if ($GLOBALS['esta_activado']) {
             window.location.href = 'dictaminacion.php';
         }
 
+        function formatHtmlText(html) {
+            // Reemplaza <br> por saltos de línea
+            html = html.replace(/<br\s*\/?>/gi, "\n");
+            // Reemplaza <p> y </p> con saltos de línea adicionales para formar párrafos
+            html = html.replace(/<\/?p[^>]*>/gi, "\n");
+            // Elimina cualquier otra etiqueta HTML (si hay más)
+            return html.replace(/<\/?[^>]+(>|$)/g, "");
+        }
+
         async function generarPdf(preguntas_json, ticket_number, usuario) {
             let preguntas = preguntas_json;
             //console.log(preguntas_json);
@@ -218,7 +227,7 @@ if ($GLOBALS['esta_activado']) {
                             }
                         }]);
                     } else if (pregunta.pregunta.includes("p")) {
-                        preguntaInfo = pregunta.respuesta;
+                        preguntaInfo = formatHtmlText(pregunta.respuesta);
                     } else if (pregunta.pregunta.includes("a")) {
                         // Add regular question and response along with an empty recommendation
                         rows.push([{
@@ -245,9 +254,7 @@ if ($GLOBALS['esta_activado']) {
             doc.autoTable({
                 head: [columns],
                 body: rows,
-                margin: {
-                    top: 55
-                },
+                startY: 55,
                 styles: {
                     fontSize: 11,
                     cellPadding: 3,
@@ -264,36 +271,37 @@ if ($GLOBALS['esta_activado']) {
                     }, // Justify "ASPECTO A EVALUAR"
                     1: {
                         halign: 'center'
-                    }, // Center "VALORACIÓN"
-                    2: {
-                        halign: 'justify'
-                    } // Justify "RECOMENDACIONES"
+                    } // Center "VALORACIÓN"
                 }
             });
+            // Posición de la sección de "Lugar y fecha" y "Nombre y firma del Lector(a)"
+            const sectionY = doc.autoTable.previous.finalY + 20;
 
-            // Add a section for "Fecha Nombre" and "Firma del Lector(a)"
-            const sectionY = doc.autoTable.previous.finalY + 40; // Get the position after the table
+            // Verifica si queda suficiente espacio en la página actual
+            if (sectionY + 10 > pageHeight) { // Ajusta el valor si necesitas más espacio
+                doc.addPage();
+            }
 
-            // Width for the underline spaces
-            const lineWidth = 50; // Adjust width for underline
-            const spaceBetween = 20; // Space between the two fields
+            // Ancho de los espacios subrayados
+            const lineWidth = 50; // Ajusta el ancho de la línea
+            const spaceBetween = 20; // Espacio entre los dos campos
 
-            // Calculate center positions
+            // Calcula las posiciones centradas
             const centerXNombre = (pageWidth / 2) - (lineWidth + spaceBetween / 2);
             const centerXFirma = (pageWidth / 2) + (spaceBetween / 2);
 
-            // Draw lines above the fields
-            doc.line(centerXNombre, sectionY - 10, centerXNombre + lineWidth, sectionY - 10); // Line for "Lugar y fecha"
-            doc.line(centerXFirma, sectionY - 10, centerXFirma + lineWidth, sectionY - 10); // Line for "Nombre y firma del Lector(a)"
+            // Dibuja las líneas encima de los campos
+            doc.line(centerXNombre, sectionY - 10, centerXNombre + lineWidth, sectionY - 10); // Línea para "Lugar y fecha"
+            doc.line(centerXFirma, sectionY - 10, centerXFirma + lineWidth, sectionY - 10); // Línea para "Nombre y firma del Lector(a)"
 
-            // Add text for "Lugar y fecha" and "Nombre y firma del Lector(a)"
+            // Añade el texto para "Lugar y fecha" y "Nombre y firma del Lector(a)"
             doc.text("Lugar y fecha", centerXNombre + (lineWidth / 2), sectionY - 5, {
                 align: "center"
-            }); // Align text at the center of the line
+            });
             doc.text("Nombre y firma del Lector(a)", centerXFirma + (lineWidth / 2), sectionY - 5, {
                 align: "center"
-            }); // Align text at the center of the line
-            // Save the PDF
+            });
+
             doc.save('Ticket_No.' + ticket_number + '_evaluación.pdf');
         }
 
@@ -327,7 +335,7 @@ if ($GLOBALS['esta_activado']) {
                             } else if (placeholder && placeholder.startsWith("t")) {
                                 datos[placeholder] = pregunta.pregunta_label || "";
                             } else if (placeholder && placeholder.startsWith("p")) {
-                                datos[placeholder] = pregunta.respuesta || "";
+                                datos[placeholder] = formatHtmlText(pregunta.respuesta) || "";
                             } else if (placeholder && placeholder.startsWith("v")) {
                                 datos[placeholder] = pregunta.respuesta || "";
                             }
