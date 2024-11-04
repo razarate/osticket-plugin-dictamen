@@ -9,7 +9,10 @@ class ArchivosDictaminacion
     private $asignacion_dictamen;
     private $libreria1;
     private $libreria2;
+    private $libreria3;
+    private $libreria4;
     private $propiedades;
+    private $word;
 
     public function __construct($ruta)
     {
@@ -21,6 +24,9 @@ class ArchivosDictaminacion
         $this->asignacion_dictamen = "asignacion_dictamen.php";
         $this->libreria1 = "jspdf.plugin.autotable.min.js";
         $this->libreria2 = "jspdf.umd.min.js";
+        $this->libreria3 = "pizzip.min.js";
+        $this->libreria4 = "FileSaver.min.js";
+        $this->word = "investigacion.docx";
     }
 
     public function copiarArchivos()
@@ -33,7 +39,10 @@ class ArchivosDictaminacion
             $this->formulario_dictaminacion,
             $this->asignacion_dictamen,
             $this->libreria1,
-            $this->libreria2
+            $this->libreria2,
+            $this->libreria3,
+            $this->libreria4,
+            $this->word
         ];
 
         foreach ($archivos as $archivo) {
@@ -57,7 +66,10 @@ class ArchivosDictaminacion
             $this->formulario_dictaminacion,
             $this->asignacion_dictamen,
             $this->libreria1,
-            $this->libreria2
+            $this->libreria2,
+            $this->libreria3,
+            $this->libreria4,
+            $this->word
         ];
 
         foreach ($archivos as $archivo) {

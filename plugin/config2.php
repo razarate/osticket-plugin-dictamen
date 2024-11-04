@@ -14,7 +14,10 @@ return array(
         'configuracion_dictamen.php',
         'formulario_dictamen.php',
         'jspdf.plugin.autotable.min.js',
-        'jspdf.umd.min.js'
+        'jspdf.umd.min.js',
+        'pizzip.min.js',
+        'FileSaver.min.js',
+        'investigacion.docx'
     ),
     'output' => '../osticket/include/plugins/dictaminacion.phar'
     //'output' => 'dictaminacion.phar'

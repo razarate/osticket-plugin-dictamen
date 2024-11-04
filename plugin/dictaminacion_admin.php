@@ -122,6 +122,7 @@ if ($GLOBALS['esta_activado']) {
 		</thead>
 		<tbody>
 			<?php
+			$usuario = "";
 			$sql = "SELECT ticket_id, number 
 			FROM " . $TABLE_PREFIX . "ticket 
 			WHERE status_id=1 
@@ -132,8 +133,14 @@ if ($GLOBALS['esta_activado']) {
 				$ticket_number = $row['number'];
 				$ticket_id = $row['ticket_id'];
 
+				$sql_usuario = "SELECT LEFT(u.name, 15) AS name FROM " . $TABLE_PREFIX . "ticket t JOIN " . $TABLE_PREFIX . "user u ON t.user_id = u.id WHERE t.number = $ticket_number";
+				$result_usuario = db_query($sql_usuario);
+				while ($fila_usuario = db_fetch_array($result_usuario)) {
+					$usuario =  $fila_usuario['name'];
+				}
+
 				echo "<tr>";
-				echo "<td>#" . $ticket_number . "</td>";
+				echo "<td>#" . $ticket_number . "<br>$usuario</td>";
 
 				$sql_estado = "SELECT * FROM " . $TABLE_PREFIX . "dictaminacion WHERE id_ticket=$ticket_id AND id_estado=1 AND (id_valoracion=1 OR id_valoracion=0)";
 				$res_estado = db_query($sql_estado);

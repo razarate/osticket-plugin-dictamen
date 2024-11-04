@@ -126,6 +126,9 @@ if ($GLOBALS['esta_activado']) {
         }
     </style>
 
+    <script src="FileSaver.min.js"></script>
+    <script src="pizzip.min.js"></script>
+    <script src="docxtemplater.min.js"></script>
     <script src="jspdf.umd.min.js"></script>
     <script src="jspdf.plugin.autotable.min.js"></script>
     <script>
@@ -134,7 +137,7 @@ if ($GLOBALS['esta_activado']) {
             window.location.href = 'dictaminacion.php';
         }
 
-        async function generarPdf(preguntas_json, ticket_number) {
+        async function generarPdf(preguntas_json, ticket_number, usuario) {
             let preguntas = preguntas_json;
             //console.log(preguntas_json);
             const {
@@ -167,26 +170,44 @@ if ($GLOBALS['esta_activado']) {
             const nombreTicket = "Evaluación del ticket #" + ticket_number;
             doc.text(nombreTicket, 15, 45);
 
+            const nombreUsuario = "Nombre del Autor(es): " + usuario;
+            doc.text(nombreUsuario, 15, 50);
+
             // Define the columns for the table
             const columns = ["ASPECTO A EVALUAR", "VALORACIÓN"];
             const rows = [];
 
+            var preguntaInfo = '';
+
             preguntas.forEach(pregunta => {
-                // Check if the response is equal to "titulo"
-                if (pregunta.respuesta === "titulo") {
-                    // Add a header row with the pregunta_label
+                if (pregunta.pregunta == "valoracion") {
                     rows.push([{
-                        content: pregunta.pregunta_label,
-                        colSpan: 3,
-                        styles: {
-                            halign: 'center',
-                            fontStyle: 'bold',
-                            fillColor: [200, 200, 200]
+                            content: pregunta.pregunta_label,
+                            styles: {
+                                halign: 'justify'
+                            } // Justified
+                        },
+                        {
+                            content: pregunta.respuesta,
+                            styles: {
+                                halign: 'center'
+                            } // Centered
                         }
-                    }]);
+                    ]);
                 } else {
-                    // Check if the pregunta_label contains "rec" to set the recommendation
-                    if (pregunta.pregunta.includes("rec")) {
+                    if (pregunta.pregunta.includes("t")) {
+                        // Add a header row with the pregunta_label
+                        rows.push([{
+                            content: pregunta.pregunta_label,
+                            colSpan: 3,
+                            styles: {
+                                halign: 'center',
+                                fontStyle: 'bold',
+                                fillColor: [200, 200, 200]
+                            }
+                        }]);
+                    } else if (pregunta.pregunta.includes("r")) {
+                        // Check if the pregunta_label contains "rec" to set the recommendation
                         rows.push([{
                             content: pregunta.respuesta,
                             colSpan: 3,
@@ -196,10 +217,12 @@ if ($GLOBALS['esta_activado']) {
                                 fillColor: [240, 240, 240]
                             }
                         }]);
-                    } else {
+                    } else if (pregunta.pregunta.includes("p")) {
+                        preguntaInfo = pregunta.respuesta;
+                    } else if (pregunta.pregunta.includes("a")) {
                         // Add regular question and response along with an empty recommendation
                         rows.push([{
-                                content: pregunta.pregunta_label,
+                                content: preguntaInfo,
                                 styles: {
                                     halign: 'justify'
                                 } // Justified
@@ -212,7 +235,10 @@ if ($GLOBALS['esta_activado']) {
                             }
                         ]);
                     }
+
                 }
+                // Check if the response is equal to "titulo"
+
             });
 
             // Generate the table of responses
@@ -220,7 +246,7 @@ if ($GLOBALS['esta_activado']) {
                 head: [columns],
                 body: rows,
                 margin: {
-                    top: 50
+                    top: 55
                 },
                 styles: {
                     fontSize: 11,
@@ -257,8 +283,8 @@ if ($GLOBALS['esta_activado']) {
             const centerXFirma = (pageWidth / 2) + (spaceBetween / 2);
 
             // Draw lines above the fields
-            doc.line(centerXNombre, sectionY-10, centerXNombre + lineWidth, sectionY-10); // Line for "Lugar y fecha"
-            doc.line(centerXFirma, sectionY-10, centerXFirma + lineWidth, sectionY-10); // Line for "Nombre y firma del Lector(a)"
+            doc.line(centerXNombre, sectionY - 10, centerXNombre + lineWidth, sectionY - 10); // Line for "Lugar y fecha"
+            doc.line(centerXFirma, sectionY - 10, centerXFirma + lineWidth, sectionY - 10); // Line for "Nombre y firma del Lector(a)"
 
             // Add text for "Lugar y fecha" and "Nombre y firma del Lector(a)"
             doc.text("Lugar y fecha", centerXNombre + (lineWidth / 2), sectionY - 5, {
@@ -269,6 +295,70 @@ if ($GLOBALS['esta_activado']) {
             }); // Align text at the center of the line
             // Save the PDF
             doc.save('Ticket_No.' + ticket_number + '_evaluación.pdf');
+        }
+
+        function generarWord(preguntas_json, ticket_number, usuario) {
+            let preguntas = preguntas_json;
+            // Cargar el archivo usando fetch
+            fetch('investigacion.docx')
+                .then(response => response.blob())
+                .then(blob => {
+                    const reader = new FileReader();
+
+                    reader.onload = function(event) {
+                        const zip = new PizZip(event.target.result);
+                        const doc = new window.docxtemplater().loadZip(zip);
+
+                        // Crear un objeto datos que contendrá el número de ticket y todas las preguntas
+                        const datos = {
+                            ticket: ticket_number, // Añade el número de ticket a los datos
+                            usuario: usuario
+                        };
+
+                        // Recorrer las preguntas y configurar cada una con sus placeholders {p1}, {p2}, etc.
+                        preguntas.forEach((pregunta, index) => {
+                            const placeholder = pregunta.pregunta;
+                            // Obtener el label como a1, t1, etc.
+                            // Verificar si el placeholder empieza con "a"
+                            if (placeholder && placeholder.startsWith("r")) {
+                                datos[placeholder] = pregunta.respuesta || ""; // Añadir cada pregunta con su respectivo placeholder si empieza con "a"
+                            } else if (placeholder && placeholder.startsWith("a")) {
+                                datos[placeholder] = pregunta.respuesta || "";
+                            } else if (placeholder && placeholder.startsWith("t")) {
+                                datos[placeholder] = pregunta.pregunta_label || "";
+                            } else if (placeholder && placeholder.startsWith("p")) {
+                                datos[placeholder] = pregunta.respuesta || "";
+                            } else if (placeholder && placeholder.startsWith("v")) {
+                                datos[placeholder] = pregunta.respuesta || "";
+                            }
+                        });
+
+                        // Ahora que datos contiene todos los placeholders necesarios, se configura en doc
+                        doc.setData(datos);
+
+                        try {
+                            // Renderizar el documento
+                            doc.render();
+                        } catch (error) {
+                            console.error("Error al renderizar el documento:", error);
+                            if (error.properties) {
+                                console.error("Detalles del error de plantilla:", error.properties);
+                            }
+                            return;
+                        }
+
+                        // Generar el archivo de salida
+                        const output = doc.getZip().generate({
+                            type: "blob"
+                        });
+                        saveAs(output, 'Ticket_No.' + ticket_number + '_evaluación.docx'); // Guardar el archivo modificado
+                    };
+
+                    reader.readAsBinaryString(blob);
+                })
+                .catch(error => {
+                    console.error("Error al cargar el archivo:", error);
+                });
         }
     </script>
 
@@ -285,7 +375,8 @@ if ($GLOBALS['esta_activado']) {
                 <tr>
                     <th>Ticket</th>
                     <th>Estado</th>
-                    <th>Exportar</th>
+                    <th>Exportar en: </th>
+                    <th>Exportar en: </th>
                 </tr>
             </thead>
             <tbody>
@@ -293,8 +384,14 @@ if ($GLOBALS['esta_activado']) {
                 while ($row = db_fetch_array($res)) {
                     $ticket_number = $row['number'];
                     $ticket_id = $row['ticket_id'];
-
+                    $usuario = "";
                     $preguntas = [];
+
+                    $sql_usuario = "SELECT u.name FROM " . $TABLE_PREFIX . "ticket t JOIN " . $TABLE_PREFIX . "user u ON t.user_id = u.id WHERE t.number = $ticket_number";
+                    $result_usuario = db_query($sql_usuario);
+                    while ($fila_usuario = db_fetch_array($result_usuario)) {
+                        $usuario =  $fila_usuario['name'];
+                    }
 
                     $sql_form = "SELECT * FROM " . $TABLE_PREFIX . "dictaminacion_respuestas WHERE id_ticket=$ticket_id AND id_staff = $agent_id ORDER BY id_respuesta";
                     $result_form = db_query($sql_form);
@@ -308,16 +405,18 @@ if ($GLOBALS['esta_activado']) {
                     $estado = db_query($sql_estado);
                     echo "<tr>";
                     if ($ir_formulario) {
-                        echo "<td><a href='formulario_dictamen.php?id=" . $ticket_id . "'>#" . $ticket_number . "</a></td>";
+                        echo "<td><a href='formulario_dictamen.php?id=" . $ticket_id . "'>#" . $ticket_number . "</a><br>$usuario</td>";
                     } else {
                         echo "<td><span style='color: blue; text-decoration: underline; cursor: pointer;' onclick='mostrarAlerta(\"$error\")'>#$ticket_number</span></td>";
                     }
                     if (db_num_rows($estado) == 1) {
                         echo "<td>Evaluado</td>";
-                        echo "<td><input type='button' value='PDF' onclick='generarPdf($preguntas_json, $ticket_number)'></td>";
+                        echo "<td><input type='button' value='WORD' onclick='generarWord($preguntas_json, $ticket_number, " . json_encode($usuario) . ")'></td>";
+                        echo "<td><input type='button' value='PDF' onclick='generarPdf($preguntas_json, $ticket_number, " . json_encode($usuario) . ")'></td>";
                     } elseif (db_num_rows($estado) == 0) {
                         echo "<td>Pendiente</td>";
-                        echo "<td><input type='button' value='PDF' onclick='generarPdf($preguntas_json, $ticket_number)' disabled></td>";
+                        echo "<td><input type='button' value='WORD' onclick='generarWord($preguntas_json, $ticket_number, $usuario)' disabled></td>";
+                        echo "<td><input type='button' value='PDF' onclick='generarPdf($preguntas_json, $ticket_number, $usuario)' disabled></td>";
                     }
                     echo "</tr>";
                 }
