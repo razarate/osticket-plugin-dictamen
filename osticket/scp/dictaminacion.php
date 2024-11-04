@@ -137,7 +137,7 @@ if ($GLOBALS['esta_activado']) {
             window.location.href = 'dictaminacion.php';
         }
 
-        async function generarPdf(preguntas_json, ticket_number) {
+        async function generarPdf(preguntas_json, ticket_number, usuario) {
             let preguntas = preguntas_json;
             //console.log(preguntas_json);
             const {
@@ -169,6 +169,9 @@ if ($GLOBALS['esta_activado']) {
             doc.setFontSize(11);
             const nombreTicket = "Evaluación del ticket #" + ticket_number;
             doc.text(nombreTicket, 15, 45);
+
+            const nombreUsuario = "Nombre del Autor(es): " + usuario;
+            doc.text(nombreUsuario, 15, 50);
 
             // Define the columns for the table
             const columns = ["ASPECTO A EVALUAR", "VALORACIÓN"];
@@ -243,7 +246,7 @@ if ($GLOBALS['esta_activado']) {
                 head: [columns],
                 body: rows,
                 margin: {
-                    top: 50
+                    top: 55
                 },
                 styles: {
                     fontSize: 11,
@@ -294,10 +297,8 @@ if ($GLOBALS['esta_activado']) {
             doc.save('Ticket_No.' + ticket_number + '_evaluación.pdf');
         }
 
-        function generarWord(preguntas_json, ticket_number) {
+        function generarWord(preguntas_json, ticket_number, usuario) {
             let preguntas = preguntas_json;
-            console.log(preguntas);
-
             // Cargar el archivo usando fetch
             fetch('investigacion.docx')
                 .then(response => response.blob())
@@ -310,7 +311,8 @@ if ($GLOBALS['esta_activado']) {
 
                         // Crear un objeto datos que contendrá el número de ticket y todas las preguntas
                         const datos = {
-                            ticket: ticket_number // Añade el número de ticket a los datos
+                            ticket: ticket_number, // Añade el número de ticket a los datos
+                            usuario: usuario
                         };
 
                         // Recorrer las preguntas y configurar cada una con sus placeholders {p1}, {p2}, etc.
@@ -320,7 +322,6 @@ if ($GLOBALS['esta_activado']) {
                             // Verificar si el placeholder empieza con "a"
                             if (placeholder && placeholder.startsWith("r")) {
                                 datos[placeholder] = pregunta.respuesta || ""; // Añadir cada pregunta con su respectivo placeholder si empieza con "a"
-                                console.log(`Placeholder ${placeholder} agregado con respuesta: ${pregunta.respuesta || ""}`);
                             } else if (placeholder && placeholder.startsWith("a")) {
                                 datos[placeholder] = pregunta.respuesta || "";
                             } else if (placeholder && placeholder.startsWith("t")) {
@@ -383,8 +384,14 @@ if ($GLOBALS['esta_activado']) {
                 while ($row = db_fetch_array($res)) {
                     $ticket_number = $row['number'];
                     $ticket_id = $row['ticket_id'];
-
+                    $usuario = "";
                     $preguntas = [];
+
+                    $sql_usuario = "SELECT u.name FROM " . $TABLE_PREFIX . "ticket t JOIN " . $TABLE_PREFIX . "user u ON t.user_id = u.id WHERE t.number = $ticket_number";
+                    $result_usuario = db_query($sql_usuario);
+                    while ($fila_usuario = db_fetch_array($result_usuario)) {
+                        $usuario =  $fila_usuario['name'];
+                    }
 
                     $sql_form = "SELECT * FROM " . $TABLE_PREFIX . "dictaminacion_respuestas WHERE id_ticket=$ticket_id AND id_staff = $agent_id ORDER BY id_respuesta";
                     $result_form = db_query($sql_form);
@@ -404,12 +411,12 @@ if ($GLOBALS['esta_activado']) {
                     }
                     if (db_num_rows($estado) == 1) {
                         echo "<td>Evaluado</td>";
-                        echo "<td><input type='button' value='WORD' onclick='generarWord($preguntas_json, $ticket_number)'></td>";
-                        echo "<td><input type='button' value='PDF' onclick='generarPdf($preguntas_json, $ticket_number)'></td>";
+                        echo "<td><input type='button' value='WORD' onclick='generarWord($preguntas_json, $ticket_number, " . json_encode($usuario) . ")'></td>";
+                        echo "<td><input type='button' value='PDF' onclick='generarPdf($preguntas_json, $ticket_number, " . json_encode($usuario) . ")'></td>";
                     } elseif (db_num_rows($estado) == 0) {
                         echo "<td>Pendiente</td>";
-                        echo "<td><input type='button' value='WORD' onclick='generarWord($preguntas_json, $ticket_number)' disabled></td>";
-                        echo "<td><input type='button' value='PDF' onclick='generarPdf($preguntas_json, $ticket_number)' disabled></td>";
+                        echo "<td><input type='button' value='WORD' onclick='generarWord($preguntas_json, $ticket_number, $usuario)' disabled></td>";
+                        echo "<td><input type='button' value='PDF' onclick='generarPdf($preguntas_json, $ticket_number, $usuario)' disabled></td>";
                     }
                     echo "</tr>";
                 }
