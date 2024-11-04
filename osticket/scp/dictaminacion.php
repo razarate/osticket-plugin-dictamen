@@ -405,7 +405,7 @@ if ($GLOBALS['esta_activado']) {
                     $estado = db_query($sql_estado);
                     echo "<tr>";
                     if ($ir_formulario) {
-                        echo "<td><a href='formulario_dictamen.php?id=" . $ticket_id . "'>#" . $ticket_number . "</a></td>";
+                        echo "<td><a href='formulario_dictamen.php?id=" . $ticket_id . "'>#" . $ticket_number . "</a><br>$usuario</td>";
                     } else {
                         echo "<td><span style='color: blue; text-decoration: underline; cursor: pointer;' onclick='mostrarAlerta(\"$error\")'>#$ticket_number</span></td>";
                     }
