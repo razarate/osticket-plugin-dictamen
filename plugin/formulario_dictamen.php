@@ -44,7 +44,7 @@ if ($GLOBALS['esta_activado']) {
         }
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $ticket_id = intval($_POST['ticket_id']);
-            print_r($_POST);
+            //print_r($_POST);
             // Verifica si ya existe un registro en ost_dictaminacion para el ticket y el staff
             $check_dictaminacion = db_query("SELECT * FROM " . $TABLE_PREFIX . "dictaminacion WHERE id_ticket = $ticket_id AND id_staff = $staff_id");
                 if (db_num_rows($check_dictaminacion) == 0) {
