@@ -395,7 +395,7 @@ if ($GLOBALS['esta_activado']) {
                     $usuario = "";
                     $preguntas = [];
 
-                    $sql_usuario = "SELECT u.name FROM " . $TABLE_PREFIX . "ticket t JOIN " . $TABLE_PREFIX . "user u ON t.user_id = u.id WHERE t.number = $ticket_number";
+                    $sql_usuario = "SELECT u.name FROM " . $TABLE_PREFIX . "ticket t JOIN " . $TABLE_PREFIX . "user u ON t.user_id = u.id WHERE t.number = '$ticket_number'";
                     $result_usuario = db_query($sql_usuario);
                     while ($fila_usuario = db_fetch_array($result_usuario)) {
                         $usuario =  $fila_usuario['name'];

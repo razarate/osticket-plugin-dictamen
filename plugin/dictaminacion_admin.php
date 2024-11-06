@@ -133,7 +133,7 @@ if ($GLOBALS['esta_activado']) {
 				$ticket_number = $row['number'];
 				$ticket_id = $row['ticket_id'];
 
-				$sql_usuario = "SELECT LEFT(u.name, 15) AS name FROM " . $TABLE_PREFIX . "ticket t JOIN " . $TABLE_PREFIX . "user u ON t.user_id = u.id WHERE t.number = $ticket_number";
+				$sql_usuario = "SELECT LEFT(u.name, 15) AS name FROM " . $TABLE_PREFIX . "ticket t JOIN " . $TABLE_PREFIX . "user u ON t.user_id = u.id WHERE t.number = '$ticket_number'";
 				$result_usuario = db_query($sql_usuario);
 				while ($fila_usuario = db_fetch_array($result_usuario)) {
 					$usuario =  $fila_usuario['name'];

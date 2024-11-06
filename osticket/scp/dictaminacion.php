@@ -395,7 +395,7 @@ if ($GLOBALS['esta_activado']) {
                     $usuario = "";
                     $preguntas = [];
 
-                    $sql_usuario = "SELECT u.name FROM " . $TABLE_PREFIX . "ticket t JOIN " . $TABLE_PREFIX . "user u ON t.user_id = u.id WHERE t.number = $ticket_number";
+                    $sql_usuario = "SELECT u.name FROM " . $TABLE_PREFIX . "ticket t JOIN " . $TABLE_PREFIX . "user u ON t.user_id = u.id WHERE t.number = '$ticket_number'";
                     $result_usuario = db_query($sql_usuario);
                     while ($fila_usuario = db_fetch_array($result_usuario)) {
                         $usuario =  $fila_usuario['name'];
@@ -415,7 +415,7 @@ if ($GLOBALS['esta_activado']) {
                     if ($ir_formulario) {
                         echo "<td><a href='formulario_dictamen.php?id=" . $ticket_id . "'>#" . $ticket_number . "</a><br>$usuario</td>";
                     } else {
-                        echo "<td><span style='color: blue; text-decoration: underline; cursor: pointer;' onclick='mostrarAlerta(\"$error\")'>#$ticket_number</span></td>";
+                        echo "<td><span style='color: blue; text-decoration: underline; cursor: pointer;' onclick='mostrarAlerta(" . json_encode($error) . ")'>#$ticket_number</span></td>";
                     }
                     if (db_num_rows($estado) == 1) {
                         echo "<td>Evaluado</td>";
