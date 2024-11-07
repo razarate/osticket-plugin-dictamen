@@ -43,6 +43,19 @@ if ($GLOBALS['esta_activado']) {
         $ir_formulario = false;
     }
 
+
+    function validarIrFormulario($ir_formulario, $ticket_id, $error, $nombre)
+    {
+        if ($ir_formulario) {
+            echo "<td><input type='button' value='$nombre' 
+            onclick='irFormulario(" . $ticket_id . ")'>
+            </td>";
+        } else {
+            echo "<td><input type='button' value='$nombre' 
+            onclick='mostrarAlerta(" . json_encode($error) . ")'>
+            </td>";
+        }
+    }
 ?>
 
 
@@ -54,6 +67,15 @@ if ($GLOBALS['esta_activado']) {
             /* Distribuir espacio entre h1 y el botón */
             align-items: center;
             /* Alinear verticalmente al centro */
+        }
+
+        .tickets {
+            /*color: blue;*/
+            font-weight: bold;
+        }
+
+        .filaEvaluado {
+            background-color: #b8ffbb;
         }
 
         h1 {
@@ -81,14 +103,15 @@ if ($GLOBALS['esta_activado']) {
             padding: 10px;
             /* Espaciado interno */
             text-align: center;
-            border: 1px solid #ddd;
+            border: 1px solid lightsalmon;
             /* Bordes suaves */
         }
 
         th {
-            background-color: #f2f2f2;
+            background-color: orangered;
             /* Color de fondo de encabezados */
             font-weight: bold;
+            color: white;
         }
 
         /* Ajuste para los botones */
@@ -135,6 +158,10 @@ if ($GLOBALS['esta_activado']) {
         function mostrarAlerta(error) {
             alert(error);
             window.location.href = 'dictaminacion.php';
+        }
+
+        function irFormulario(ticket_id) {
+            window.location.href = 'formulario_dictamen.php?id=' + ticket_id;
         }
 
         function formatHtmlText(html) {
@@ -383,8 +410,7 @@ if ($GLOBALS['esta_activado']) {
                 <tr>
                     <th>Ticket</th>
                     <th>Estado</th>
-                    <th>Exportar en: </th>
-                    <th>Exportar en: </th>
+                    <th>Dictaminar</th>
                 </tr>
             </thead>
             <tbody>
@@ -411,20 +437,21 @@ if ($GLOBALS['esta_activado']) {
 
                     $sql_estado = "SELECT * FROM " . $TABLE_PREFIX . "dictaminacion WHERE id_staff = $agent_id AND id_ticket = $ticket_id AND id_estado=1";
                     $estado = db_query($sql_estado);
-                    echo "<tr>";
-                    if ($ir_formulario) {
-                        echo "<td><a href='formulario_dictamen.php?id=" . $ticket_id . "'>#" . $ticket_number . "</a><br>$usuario</td>";
-                    } else {
-                        echo "<td><span style='color: blue; text-decoration: underline; cursor: pointer;' onclick='mostrarAlerta(" . json_encode($error) . ")'>#$ticket_number</span></td>";
-                    }
+
                     if (db_num_rows($estado) == 1) {
+                        echo "<tr class='filaEvaluado'>";
+                        echo "<td><p class='tickets'>#" . $ticket_number . "</p>$usuario</td>";
                         echo "<td>Evaluado</td>";
-                        echo "<td><input type='button' value='WORD' onclick='generarWord($preguntas_json, $ticket_number, " . json_encode($usuario) . ")'></td>";
-                        echo "<td><input type='button' value='PDF' onclick='generarPdf($preguntas_json, $ticket_number, " . json_encode($usuario) . ")'></td>";
+                        validarIrFormulario($ir_formulario, $ticket_id, $error, 'CONSULTAR');
+                        // echo "<td><input type='button' value='WORD' onclick='generarWord($preguntas_json, $ticket_number, " . json_encode($usuario) . ")'></td>";
+                        //echo "<td><input type='button' value='PDF' onclick='generarPdf($preguntas_json, $ticket_number, " . json_encode($usuario) . ")'></td>";
                     } elseif (db_num_rows($estado) == 0) {
+                        echo "<tr>";
+                        echo "<td><p class='tickets'>#" . $ticket_number . "</p>$usuario</td>";
                         echo "<td>Pendiente</td>";
-                        echo "<td><input type='button' value='WORD' onclick='generarWord($preguntas_json, $ticket_number, $usuario)' disabled></td>";
-                        echo "<td><input type='button' value='PDF' onclick='generarPdf($preguntas_json, $ticket_number, $usuario)' disabled></td>";
+                        validarIrFormulario($ir_formulario, $ticket_id, $error, 'DICTAMINAR');
+                        //echo "<td><input type='button' value='WORD' onclick='generarWord($preguntas_json, $ticket_number, $usuario)' disabled></td>";
+                        //echo "<td><input type='button' value='PDF' onclick='generarPdf($preguntas_json, $ticket_number, $usuario)' disabled></td>";
                     }
                     echo "</tr>";
                 }
