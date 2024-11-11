@@ -151,7 +151,7 @@ if ($GLOBALS['esta_activado']) {
 
 			.button-container {
 				display: flex;
-				
+
 				/* Espacio entre los botones */
 				justify-content: center;
 				/* Centra los botones horizontalmente */
@@ -178,6 +178,11 @@ if ($GLOBALS['esta_activado']) {
 			}
 		</style>
 
+		<script src="FileSaver.min.js"></script>
+		<script src="pizzip.min.js"></script>
+		<script src="docxtemplater.min.js"></script>
+		<script src="jspdf.umd.min.js"></script>
+		<script src="jspdf.plugin.autotable.min.js"></script>
 		<script>
 			function editar(ticket_id) {
 				window.location.href = 'asignacion_dictamen.php?id=' + ticket_id + '&idEstado=3';
@@ -206,6 +211,264 @@ if ($GLOBALS['esta_activado']) {
 					});
 				});
 			});
+
+			function formatHtmlText(html) {
+				// Reemplaza <br> por saltos de línea
+				html = html.replace(/<br\s*\/?>/gi, "\n");
+				// Reemplaza <p> y </p> con saltos de línea adicionales para formar párrafos
+				html = html.replace(/<\/?p[^>]*>/gi, "\n");
+				// Elimina cualquier otra etiqueta HTML (si hay más)
+				return html.replace(/<\/?[^>]+(>|$)/g, "");
+			}
+
+			async function generarPdf(preguntas_json, ticket_number, usuario) {
+				let preguntas = preguntas_json;
+				console.log(preguntas_json);
+				const {
+					jsPDF
+				} = window.jspdf;
+
+				const doc = new jsPDF({
+					orientation: 'horizontal',
+					unit: 'mm',
+					format: 'a4'
+				});
+				doc.setFontSize(12);
+
+				const pageWidth = doc.internal.pageSize.getWidth();
+				const pageHeight = doc.internal.pageSize.getHeight();
+
+				const titulo1 = "BENEMÉRITA ESCUELA NORMAL VERACRUZANA ENRIQUE C. RÉBSAMEN.";
+				const titulo2 = "DEPARTAMENTO DE INVESTIGACIÓN E INNOVACIÓN EDUCATIVA.";
+
+				const titulo1Width = doc.getTextWidth(titulo1);
+				const titulo2Width = doc.getTextWidth(titulo2);
+
+				const titulo1X = (pageWidth - titulo1Width) / 2;
+				const titulo2X = (pageWidth - titulo2Width) / 2;
+
+				doc.text(titulo1, titulo1X, 20);
+				doc.text(titulo2, titulo2X, 30);
+
+				doc.setFontSize(11);
+				const nombreTicket = "Evaluación del ticket #" + ticket_number;
+				doc.text(nombreTicket, 15, 45);
+
+				const nombreUsuario = "Nombre del Autor(es): " + usuario;
+				doc.text(nombreUsuario, 15, 50);
+
+				// Define the columns for the table
+
+				var preguntaInfo = '';
+				var espacio = 58;
+					var espacioTabla = 65;
+				var id_staff = 0;
+				var numeroRespuesta = 0;
+				let preguntasPorStaff = {};
+				preguntas.forEach(pregunta => {
+					if (id_staff != pregunta.id_staff) {
+						id_staff = pregunta.id_staff;
+						preguntasPorStaff[id_staff] = [];
+					}
+					preguntasPorStaff[pregunta.id_staff].push(pregunta);
+					// Check if the response is equal to "titulo"
+
+				});
+
+				const columns = ["ASPECTO A EVALUAR", "VALORACIÓN"];
+				Object.keys(preguntasPorStaff).forEach((id_staff, index) => {
+					numeroRespuesta = index +1;
+					const rows = [];
+					const preguntasStaff = preguntasPorStaff[id_staff];
+					preguntasStaff.forEach(pregunta => {
+						if (pregunta.pregunta == "valoracion") {
+							rows.push([{
+									content: pregunta.pregunta_label,
+									styles: {
+										halign: 'justify'
+									} // Justified
+								},
+								{
+									content: pregunta.respuesta,
+									styles: {
+										halign: 'center'
+									} // Centered
+								}
+							]);
+						} else {
+							if (pregunta.pregunta.includes("t")) {
+								// Add a header row with the pregunta_label
+								rows.push([{
+									content: pregunta.pregunta_label,
+									colSpan: 3,
+									styles: {
+										halign: 'center',
+										fontStyle: 'bold',
+										fillColor: [200, 200, 200]
+									}
+								}]);
+							} else if (pregunta.pregunta.includes("r")) {
+								// Check if the pregunta_label contains "rec" to set the recommendation
+								rows.push([{
+									content: pregunta.respuesta,
+									colSpan: 3,
+									styles: {
+										halign: 'justify', // Justify for the recommendations
+										fontStyle: 'normal',
+										fillColor: [240, 240, 240]
+									}
+								}]);
+							} else if (pregunta.pregunta.includes("p")) {
+								preguntaInfo = formatHtmlText(pregunta.respuesta);
+							} else if (pregunta.pregunta.includes("a")) {
+								// Add regular question and response along with an empty recommendation
+								rows.push([{
+										content: preguntaInfo,
+										styles: {
+											halign: 'justify'
+										} // Justified
+									},
+									{
+										content: pregunta.respuesta,
+										styles: {
+											halign: 'center'
+										} // Centered
+									}
+								]);
+							}
+						}
+					});
+
+
+					
+					// Generate the table of responses
+					doc.text('Dictaminador ' + numeroRespuesta, 15, espacio);
+					doc.autoTable({
+						head: [columns],
+						body: rows,
+						startY: espacioTabla,
+						styles: {
+							fontSize: 11,
+							cellPadding: 3,
+							textColor: [0, 0, 0],
+							lineWidth: 0.65,
+							lineColor: [0, 0, 0]
+						},
+						headStyles: {
+							halign: 'center',
+						},
+						columnStyles: {
+							0: {
+								halign: 'justify'
+							}, // Justify "ASPECTO A EVALUAR"
+							1: {
+								halign: 'center'
+							} // Center "VALORACIÓN"
+						}
+					});
+
+
+					if (index < Object.keys(preguntasPorStaff).length - 1) {
+						doc.addPage();
+						espacio = 25;
+						espacioTabla = 30;
+					}
+				});
+
+
+				// Posición de la sección de "Lugar y fecha" y "Nombre y firma del Lector(a)"
+				const sectionY = doc.autoTable.previous.finalY + 20;
+
+				// Verifica si queda suficiente espacio en la página actual
+				if (sectionY + 10 > pageHeight) { // Ajusta el valor si necesitas más espacio
+					doc.addPage();
+				}
+
+				// Ancho de los espacios subrayados
+				const lineWidth = 50; // Ajusta el ancho de la línea
+				const spaceBetween = 20; // Espacio entre los dos campos
+
+				// Calcula las posiciones centradas
+				const centerXNombre = (pageWidth / 2) - (lineWidth + spaceBetween / 2);
+				const centerXFirma = (pageWidth / 2) + (spaceBetween / 2);
+
+				// Dibuja las líneas encima de los campos
+				doc.line(centerXNombre, sectionY - 10, centerXNombre + lineWidth, sectionY - 10); // Línea para "Lugar y fecha"
+				doc.line(centerXFirma, sectionY - 10, centerXFirma + lineWidth, sectionY - 10); // Línea para "Nombre y firma del Lector(a)"
+
+				// Añade el texto para "Lugar y fecha" y "Nombre y firma del Lector(a)"
+				doc.text("Lugar y fecha", centerXNombre + (lineWidth / 2), sectionY - 5, {
+					align: "center"
+				});
+				doc.text("Nombre y firma del Lector(a)", centerXFirma + (lineWidth / 2), sectionY - 5, {
+					align: "center"
+				});
+				doc.save('Ticket_No.' + ticket_number + '_evaluación.pdf');
+			}
+
+			function generarWord(preguntas_json, ticket_number, usuario) {
+				let preguntas = preguntas_json;
+				// Cargar el archivo usando fetch
+				fetch('investigacion.docx')
+					.then(response => response.blob())
+					.then(blob => {
+						const reader = new FileReader();
+
+						reader.onload = function(event) {
+							const zip = new PizZip(event.target.result);
+							const doc = new window.docxtemplater().loadZip(zip);
+
+							// Crear un objeto datos que contendrá el número de ticket y todas las preguntas
+							const datos = {
+								ticket: ticket_number, // Añade el número de ticket a los datos
+								usuario: usuario
+							};
+
+							// Recorrer las preguntas y configurar cada una con sus placeholders {p1}, {p2}, etc.
+							preguntas.forEach((pregunta, index) => {
+								const placeholder = pregunta.pregunta;
+								// Obtener el label como a1, t1, etc.
+								// Verificar si el placeholder empieza con "a"
+								if (placeholder && placeholder.startsWith("r")) {
+									datos[placeholder] = pregunta.respuesta || ""; // Añadir cada pregunta con su respectivo placeholder si empieza con "a"
+								} else if (placeholder && placeholder.startsWith("a")) {
+									datos[placeholder] = pregunta.respuesta || "";
+								} else if (placeholder && placeholder.startsWith("t")) {
+									datos[placeholder] = pregunta.pregunta_label || "";
+								} else if (placeholder && placeholder.startsWith("p")) {
+									datos[placeholder] = formatHtmlText(pregunta.respuesta) || "";
+								} else if (placeholder && placeholder.startsWith("v")) {
+									datos[placeholder] = pregunta.respuesta || "";
+								}
+							});
+
+							// Ahora que datos contiene todos los placeholders necesarios, se configura en doc
+							doc.setData(datos);
+
+							try {
+								// Renderizar el documento
+								doc.render();
+							} catch (error) {
+								console.error("Error al renderizar el documento:", error);
+								if (error.properties) {
+									console.error("Detalles del error de plantilla:", error.properties);
+								}
+								return;
+							}
+
+							// Generar el archivo de salida
+							const output = doc.getZip().generate({
+								type: "blob"
+							});
+							saveAs(output, 'Ticket_No.' + ticket_number + '_evaluación.docx'); // Guardar el archivo modificado
+						};
+
+						reader.readAsBinaryString(blob);
+					})
+					.catch(error => {
+						console.error("Error al cargar el archivo:", error);
+					});
+			}
 		</script>
 		<?php
 		$usuario = "";
@@ -221,7 +484,7 @@ if ($GLOBALS['esta_activado']) {
 			$ticket_number = $row['number'];
 			$ticket_id = $row['ticket_id'];
 
-			$sql_usuario = "SELECT LEFT(u.name, 15) AS name FROM " . $TABLE_PREFIX . "ticket t JOIN " . $TABLE_PREFIX . "user u ON t.user_id = u.id WHERE t.number = '$ticket_number'";
+			$sql_usuario = "SELECT LEFT(u.name, 50) AS name FROM " . $TABLE_PREFIX . "ticket t JOIN " . $TABLE_PREFIX . "user u ON t.user_id = u.id WHERE t.number = '$ticket_number'";
 			$result_usuario = db_query($sql_usuario);
 			while ($fila_usuario = db_fetch_array($result_usuario)) {
 				$usuario =  $fila_usuario['name'];
@@ -262,7 +525,7 @@ if ($GLOBALS['esta_activado']) {
 							$estadoDictamen = 'En proceso';
 						} elseif ($num_diferencia == 1 && db_num_rows($res_asignacion) == 2) {
 							$idEstado = 2;
-							$estadoAsignar = 'Asignar(3ro)';
+							$estadoAsignar = 'ASIGNAR(3ro)';
 							$estadoDictamen = 'Discrepancia';
 							$deshabilitar = 'disabled';
 						} elseif ($num_diferencia == 2 || $num_diferencia == 0) {
@@ -281,33 +544,25 @@ if ($GLOBALS['esta_activado']) {
 				}
 			} else {
 				$idEstado = 0;
-				$estadoAsignar = 'Asignar';
+				$estadoAsignar = 'ASIGNAR';
 				$estadoDictamen = 'Sin dictaminar';
 				$deshabilitar = 'disabled';
 			}
 
 			// Clasificar los tickets según el estado de dictamen
+			$ticketData = [
+				'number' => $ticket_number,
+				'usuario' => $usuario,
+				'asignar' => $estadoAsignar,
+				'estado' => $estadoDictamen,
+				'ticket_id' => $ticket_id,
+				'deshabilitar' => $deshabilitar,
+				'idEstado' => $idEstado
+			];
 
 			if ($estadoDictamen === 'Evaluado') {
-				$ticketData = [
-					'number' => $ticket_number,
-					'usuario' => $usuario,
-					'asignar' => $estadoAsignar,
-					'estado' => $estadoDictamen,
-					'ticket_id' => $ticket_id,
-					'idEstado' => $idEstado
-				];
 				$dictaminadosTickets[] = $ticketData;
 			} else {
-				$ticketData = [
-					'number' => $ticket_number,
-					'usuario' => $usuario,
-					'asignar' => $estadoAsignar,
-					'estado' => $estadoDictamen,
-					'ticket_id' => $ticket_id,
-					'deshabilitar' => $deshabilitar,
-					'idEstado' => $idEstado
-				];
 				$sinDictaminarTickets[] = $ticketData;
 			}
 		} ?>
@@ -328,10 +583,10 @@ if ($GLOBALS['esta_activado']) {
 			<table border="1">
 				<thead>
 					<tr>
-						<th>Ticket</th>
+						<th>TICKET</th>
 						<th>ASIGNACIÓN</th>
-						<th>Estado</th>
-						<th>Editar</th>
+						<th>ESTADO</th>
+						<th>EDITAR</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -353,21 +608,39 @@ if ($GLOBALS['esta_activado']) {
 			<table border="1">
 				<thead>
 					<tr>
-						<th>Ticket</th>
+						<th>TICKET</th>
 						<th>ASIGNACIÓN</th>
-						<th>Estado</th>
-						<th>Exportar en </th>
+						<th>ESTADO</th>
+						<th>EXPORTAR</th>
 					</tr>
 				</thead>
 				<tbody>
-					<?php foreach ($dictaminadosTickets as $ticket): ?>
+					<?php foreach ($dictaminadosTickets as $ticket):
+						$ticket_number = $ticket['number'];
+						$usuario = $ticket['usuario'];
+						$ticket_id = $ticket['ticket_id'];
+						$sql_form = "SELECT * FROM " . $TABLE_PREFIX . "dictaminacion_respuestas WHERE id_ticket=$ticket_id ORDER BY id_respuesta";
+						$result_form = db_query($sql_form);
+
+						$preguntas = [];
+						while ($fila_preguntas = db_fetch_array($result_form)) {
+							$preguntas[] = $fila_preguntas;
+						}
+						$preguntas_json = json_encode($preguntas);
+					?>
 						<tr>
 							<td>
-								<p class="tickets">#<?= $ticket['number'] ?></p><?= $ticket['usuario'] ?>
+								<p class="tickets">#<?= $ticket_number ?></p><?= $usuario ?>
 							</td>
-							<td><a href="asignacion_dictamen.php?id=<?= $ticket['ticket_id'] ?>&idEstado=<?= $ticket['idEstado'] ?>"><?= $ticket['asignar'] ?></a></td>
+							<td><a href="asignacion_dictamen.php?id=<?= $ticket_id ?>&idEstado=<?= $ticket['idEstado'] ?>"><?= $ticket['asignar'] ?></a></td>
 							<td><?= $ticket['estado'] ?></td>
-							<td class="button-container"><button class="image-button" onclick=""></button><button class="imageW-button"></button></td>
+							<td class="button-container">
+								<?php
+								echo "<button class='imageW-button' onclick='generarWord($preguntas_json, " . json_encode($ticket_number) . "," . json_encode($usuario) . "'></button>";
+								echo "<button class='image-button' onclick='generarPdf($preguntas_json, " . json_encode($ticket_number) . ", " . json_encode($usuario) . ")'></button>";
+								?>
+
+							</td>
 						</tr>
 					<?php endforeach; ?>
 				</tbody>
