@@ -127,14 +127,15 @@ if ($GLOBALS['esta_activado']) {
 			padding: 10px;
 			/* Espaciado interno */
 			text-align: center;
-			border: 1px solid #ddd;
+			border: 1px solid lightsalmon;
 			/* Bordes suaves */
 		}
 
 		th {
-			background-color: #f2f2f2;
+			background-color: orangered;
 			/* Color de fondo de encabezados */
 			font-weight: bold;
+			color:white;
 		}
 
 		/* Ajuste para los botones */
@@ -223,10 +224,10 @@ if ($GLOBALS['esta_activado']) {
 		$prueba = 2 ?>
 		<table>
 
-			<th>Nombre(s)</th>
-			<th>Apellidos</th>
-			<th>Usuario</th>
-			<th>Asignar</th>
+			<th>NOMBRE(S)</th>
+			<th>APELLIDOS</th>
+			<th>USUARIO</th>
+			<th>ASIGNAR</th>
 
 			<?php
 			if ($estado_id == 0) {
@@ -354,13 +355,13 @@ if ($GLOBALS['esta_activado']) {
 		<br>
 	<?php
 	if ($estado_id == 1) {
-		echo "<input type='button' value='Volver' onclick='volver()'>";
+		echo "<input type='button' value='VOLVER' onclick='volver()'>";
 	} elseif ($estado_id == 3) {
-		echo "<input type='button' value='Guardar' onclick='checarFormulario()'>";
-		echo "<input type='button' value='Cancelar' onclick='volver()'>";
+		echo "<input type='button' value='GUARDAR' onclick='checarFormulario()'>";
+		echo "<input type='button' value='CANCELAR' onclick='volver()'>";
 	} else {
-		echo "<input type='button' value='Guardar' onclick='checarFormulario()'>
-	<input type='button' value='Cancelar' onclick='volver()'>";
+		echo "<input type='button' value='GUARDAR' onclick='checarFormulario()'>
+	<input type='button' value='CANCELAR' onclick='volver()'>";
 	}
 
 	echo "</form>";

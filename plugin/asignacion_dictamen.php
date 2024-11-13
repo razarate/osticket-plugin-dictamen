@@ -127,14 +127,15 @@ if ($GLOBALS['esta_activado']) {
 			padding: 10px;
 			/* Espaciado interno */
 			text-align: center;
-			border: 1px solid #ddd;
+			border: 1px solid lightsalmon;
 			/* Bordes suaves */
 		}
 
 		th {
-			background-color: #f2f2f2;
+			background-color: orangered;
 			/* Color de fondo de encabezados */
 			font-weight: bold;
+			color:white;
 		}
 
 		/* Ajuste para los botones */
@@ -223,18 +224,40 @@ if ($GLOBALS['esta_activado']) {
 		$prueba = 2 ?>
 		<table>
 
-			<th>Nombre(s)</th>
-			<th>Apellidos</th>
-			<th>Usuario</th>
-			<th>Asignar</th>
+			<th>NOMBRE(S)</th>
+			<th>APELLIDOS</th>
+			<th>USUARIO</th>
+			<th>ASIGNAR</th>
 
 			<?php
 			if ($estado_id == 0) {
-				$sql = "SELECT staff_id, firstname, lastname, username FROM " . $TABLE_PREFIX . "staff WHERE isactive=1 ORDER BY firstname ASC";
+				$sql = "SELECT staff_id, firstname, lastname, username FROM " . $TABLE_PREFIX . "staff WHERE isactive=1";
+				$staffs = db_query($sql);
+			} else if ($estado_id == 1) {
+				$sql = "SELECT DISTINCT s.staff_id, s.firstname, s.lastname, s.username 
+				FROM " . $TABLE_PREFIX . "staff AS s 
+				JOIN " . $TABLE_PREFIX . "dictaminacion_asignaciones AS a ON s.staff_id = a.id_staff";
 				$staffs = db_query($sql);
 			} else {
-				$sql = "SELECT staff_id, firstname, lastname, username FROM " . $TABLE_PREFIX . "staff ORDER BY firstname ASC";
-				$staffs = db_query($sql);
+				$sql_verificacion = "SELECT s.staff_id, s.firstname, s.lastname, s.username 
+                     FROM " . $TABLE_PREFIX . "staff AS s
+                     JOIN " . $TABLE_PREFIX . "dictaminacion_asignaciones AS a ON s.staff_id = a.id_staff 
+                     WHERE s.isactive = 0";
+
+				// Ejecuta la consulta y almacena el resultado
+				$result = db_query($sql_verificacion);
+
+				// Verifica si hay al menos una fila en el resultado
+				if (db_num_rows($result) >= 1) {
+					$sql = "SELECT staff_id, firstname, lastname, username FROM " . $TABLE_PREFIX . "staff";
+					$staffs = db_query($sql);
+				} else {
+					// Si no hay resultados en la primera consulta, ejecuta la consulta alternativa
+					$sql = "SELECT staff_id, firstname, lastname, username 
+					FROM " . $TABLE_PREFIX . "staff 
+					WHERE isactive = 1";
+					$staffs = db_query($sql);
+				}
 			}
 
 			while ($row = db_fetch_array($staffs)) {
@@ -332,13 +355,13 @@ if ($GLOBALS['esta_activado']) {
 		<br>
 	<?php
 	if ($estado_id == 1) {
-		echo "<input type='button' value='Volver' onclick='volver()'>";
+		echo "<input type='button' value='VOLVER' onclick='volver()'>";
 	} elseif ($estado_id == 3) {
-		echo "<input type='button' value='Guardar' onclick='checarFormulario()'>";
-		echo "<input type='button' value='Cancelar' onclick='volver()'>";
+		echo "<input type='button' value='GUARDAR' onclick='checarFormulario()'>";
+		echo "<input type='button' value='CANCELAR' onclick='volver()'>";
 	} else {
-		echo "<input type='button' value='Guardar' onclick='checarFormulario()'>
-	<input type='button' value='Cancelar' onclick='volver()'>";
+		echo "<input type='button' value='GUARDAR' onclick='checarFormulario()'>
+	<input type='button' value='CANCELAR' onclick='volver()'>";
 	}
 
 	echo "</form>";

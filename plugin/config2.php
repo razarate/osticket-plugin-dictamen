@@ -18,9 +18,13 @@ return array(
         'pizzip.min.js',
         'FileSaver.min.js',
         'docxtemplater.min.js',
-        'investigacion.docx'
+        'documento.docx',
+        'documento2.docx',
+        'word-logo.png',
+        'pdf-logo.png'
     ),
-    //'output' => '../osticket/include/plugins/dictaminacion.phar'
-    'output' => 'dictaminacion.phar'
+    'output' => '../osticket/include/plugins/dictaminacion.phar'
+    //'output' => 'dictaminacion.phar'
+    //'output' => '../dictaminacion.phar'
 );
 

@@ -89,14 +89,15 @@ GROUP BY L.id, L.name";
             padding: 10px;
             /* Espaciado interno */
             text-align: center;
-            border: 1px solid #ddd;
+            border: 1px solid lightsalmon;
             /* Bordes suaves */
         }
 
         th {
-            background-color: #f2f2f2;
+            background-color: orangered;
             /* Color de fondo de encabezados */
             font-weight: bold;
+            color:white;
         }
 
         /* Ajuste para los botones */
@@ -190,9 +191,9 @@ GROUP BY L.id, L.name";
             // Crear encabezado de la tabla
             var filaEncabezado = document.createElement('tr');
             var encabezadoOpcion = document.createElement('th');
-            encabezadoOpcion.textContent = 'Opción';
+            encabezadoOpcion.textContent = 'OPCIÓN';
             var encabezadoCorrecta = document.createElement('th');
-            encabezadoCorrecta.textContent = 'Respuesta Correcta';
+            encabezadoCorrecta.textContent = 'RESPUESTA CORRECTA';
             filaEncabezado.appendChild(encabezadoOpcion);
             filaEncabezado.appendChild(encabezadoCorrecta);
             tabla.appendChild(filaEncabezado);
@@ -299,7 +300,7 @@ GROUP BY L.id, L.name";
 
             // Cambiar el texto del botón a "Guardar"
             var btnGuardar = document.getElementById('btnGuardar');
-            btnGuardar.value = "Guardar";
+            btnGuardar.value = "GUARDAR";
             btnGuardar.onclick = function(event) {
                 guardar(event); // Asegúrate de pasar el evento aquí
             };
@@ -328,7 +329,7 @@ GROUP BY L.id, L.name";
         <form action="configuracion_dictamen.php" id="configForm" class="dynamic-form" method="post"
             onsubmit="validarSeleccion(event)">
             <?php csrf_token(); ?>
-            <label for="lista" class="titulo">Nombre de la lista: </label>
+            <label for="lista" class="titulo">NOMBRE DE LA LISTA:</label>
             <select name="lista" id="lista" onchange="seleccionarLista()" <?php echo $existe_opciones ? 'disabled' : ''; ?>><br>
                 <?php
                 $resultado_listas = db_query($sql_listas);
@@ -408,9 +409,9 @@ GROUP BY L.id, L.name";
             </table>
 
             <br>
-            <input type="button" id="btnGuardar" value="<?php echo $existe_opciones ? 'Editar' : 'Guardar'; ?>"
+            <input type="button" id="btnGuardar" value="<?php echo $existe_opciones ? 'EDITAR' : 'GUARDAR'; ?>"
                 class="button" onclick="<?php echo $existe_opciones ? 'editar()' : 'guardar()'; ?>">
-            <input type="button" onclick="volver()" class="button" value="Cancelar">
+            <input type="button" onclick="volver()" class="button" value="CANCELAR">
         </form>
     </div>
 

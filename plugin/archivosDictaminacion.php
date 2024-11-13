@@ -12,8 +12,10 @@ class ArchivosDictaminacion
     private $libreria3;
     private $libreria4;
     private $libreria5;
-    private $propiedades;
     private $word;
+    private $wordSegundo;
+    private $logoWord;
+    private $logoPDF;
 
     public function __construct($ruta)
     {
@@ -28,7 +30,10 @@ class ArchivosDictaminacion
         $this->libreria3 = "pizzip.min.js";
         $this->libreria4 = "FileSaver.min.js";
         $this->libreria5 = "docxtemplater.min.js";
-        $this->word = "investigacion.docx";
+        $this->word = "documento.docx";
+        $this->wordSegundo = "documento2.docx";
+        $this->logoWord = "word-logo.png";
+        $this->logoPDF = "pdf-logo.png";
     }
 
     public function copiarArchivos()
@@ -45,7 +50,10 @@ class ArchivosDictaminacion
             $this->libreria3,
             $this->libreria4,
             $this->libreria5,
-            $this->word
+            $this->word,
+            $this->wordSegundo,
+            $this->logoWord,
+            $this->logoPDF
         ];
 
         foreach ($archivos as $archivo) {
@@ -73,7 +81,10 @@ class ArchivosDictaminacion
             $this->libreria3,
             $this->libreria4,
             $this->libreria5,
-            $this->word
+            $this->word,
+            $this->wordSegundo,
+            $this->logoWord,
+            $this->logoPDF
         ];
 
         foreach ($archivos as $archivo) {

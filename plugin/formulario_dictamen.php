@@ -113,14 +113,15 @@ if ($GLOBALS['esta_activado']) {
             padding: 5px;
             /* Espaciado interno */
             text-align: center;
-            border: 1px solid #ddd;
+            border: 1px solid lightsalmon;
             /* Bordes suaves */
         }
 
         th {
-            background-color: #f2f2f2;
+            background-color: orangered;
             /* Color de fondo de encabezados */
             font-weight: bold;
+            color:white;
         }
 
         .lb_preguntas {
@@ -297,7 +298,7 @@ if ($GLOBALS['esta_activado']) {
                  <input type='hidden' name='$pregunta_nombre' value='$pregunta'><thead>
                 <tr>
                     <th id='t1'>$pregunta</th>
-                    <th id='t2'>Valoración</th>
+                    <th id='t2'>VALORACIÓN</th>
                 </tr>
             </thead>";
             }
@@ -336,10 +337,10 @@ if ($GLOBALS['esta_activado']) {
         echo "</table>";
         echo "</br>";
         if ($estatus) { ?>
-            <input type="button" value="Volver" onclick="volver()">
+            <input type="button" value="VOLVER" onclick="volver()">
         <?php } else { ?>
-            <input type="button" value="Guardar" onclick="confirmarEnvio()">
-            <input type="button" value="Cancelar" onclick="volver()">
+            <input type="button" value="GUARDAR" onclick="confirmarEnvio()">
+            <input type="button" value="CANCELAR" onclick="volver()">
         <?php } ?>
     </form>
 <?php
