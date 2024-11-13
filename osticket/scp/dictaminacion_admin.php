@@ -403,13 +403,13 @@ if ($GLOBALS['esta_activado']) {
 				doc.text("Nombre y firma del Lector(a)", centerXFirma + (lineWidth / 2), sectionY - 5, {
 					align: "center"
 				});
-				doc.save('Ticket_No.' + ticket_number + '_evaluación.pdf');
+				doc.save('Oficio Dictamen No. Reg.'+ ticket_number + '.pdf');
 			}
 
 			function generarWord(preguntas_json, ticket_number, usuario) {
 				let preguntas = preguntas_json;
 				// Cargar el archivo usando fetch
-				fetch('investigacion.docx')
+				fetch('documento.docx')
 					.then(response => response.blob())
 					.then(blob => {
 						const reader = new FileReader();
@@ -429,7 +429,7 @@ if ($GLOBALS['esta_activado']) {
 								const placeholder = pregunta.pregunta;
 								// Obtener el label como a1, t1, etc.
 								// Verificar si el placeholder empieza con "a"
-								if (placeholder && placeholder.startsWith("r")) {
+								if (placeholder && placeholder == 'r1.1') {
 									datos[placeholder] = pregunta.respuesta || ""; // Añadir cada pregunta con su respectivo placeholder si empieza con "a"
 								} else if (placeholder && placeholder.startsWith("a")) {
 									datos[placeholder] = pregunta.respuesta || "";
@@ -460,7 +460,7 @@ if ($GLOBALS['esta_activado']) {
 							const output = doc.getZip().generate({
 								type: "blob"
 							});
-							saveAs(output, 'Ticket_No.' + ticket_number + '_evaluación.docx'); // Guardar el archivo modificado
+							saveAs(output, 'Oficio Dictamen No. Reg.'+ ticket_number + '.docx'); // Guardar el archivo modificado
 						};
 
 						reader.readAsBinaryString(blob);
@@ -636,7 +636,7 @@ if ($GLOBALS['esta_activado']) {
 							<td><?= $ticket['estado'] ?></td>
 							<td class="button-container">
 								<?php
-								echo "<button class='imageW-button' onclick='generarWord($preguntas_json, " . json_encode($ticket_number) . "," . json_encode($usuario) . "'></button>";
+								echo "<button class='imageW-button' onclick='generarWord($preguntas_json, " . json_encode($ticket_number) . "," . json_encode($usuario) . ")'></button>";
 								echo "<button class='image-button' onclick='generarPdf($preguntas_json, " . json_encode($ticket_number) . ", " . json_encode($usuario) . ")'></button>";
 								?>
 
