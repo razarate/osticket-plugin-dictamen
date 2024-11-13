@@ -23,8 +23,8 @@ return array(
         'word-logo.png',
         'pdf-logo.png'
     ),
-    'output' => '../osticket/include/plugins/dictaminacion.phar'
+    //'output' => '../osticket/include/plugins/dictaminacion.phar'
     //'output' => 'dictaminacion.phar'
-    //'output' => '../dictaminacion.phar'
+    'output' => '../dictaminacion.phar'
 );
 

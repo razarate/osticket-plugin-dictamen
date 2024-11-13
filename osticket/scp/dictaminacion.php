@@ -175,9 +175,9 @@ if ($GLOBALS['esta_activado']) {
             <table border="1">
                 <thead>
                     <tr>
-                        <th>Ticket</th>
-                        <th>Estado</th>
-                        <th>Dictaminar</th>
+                        <th>NO. DE TICKET</th>
+                        <th>ESTADO</th>
+                        <th>DICTAMINACIÓN</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -206,14 +206,14 @@ if ($GLOBALS['esta_activado']) {
                         $estado = db_query($sql_estado);
 
                         if (db_num_rows($estado) == 1) {
-                            echo "<tr class='filaEvaluado'>";
+                            echo "<tr>";
                             echo "<td><p class='tickets'>#" . $ticket_number . "</p>$usuario</td>";
-                            echo "<td>Evaluado</td>";
+                            echo "<td  class='filaEvaluado'>EVALUADO</td>";
                             validarIrFormulario($ir_formulario, $ticket_id, $error, 'CONSULTAR');
                         } elseif (db_num_rows($estado) == 0) {
                             echo "<tr>";
                             echo "<td><p class='tickets'>#" . $ticket_number . "</p>$usuario</td>";
-                            echo "<td>Pendiente</td>";
+                            echo "<td>PENDIENTE</td>";
                             validarIrFormulario($ir_formulario, $ticket_id, $error, 'DICTAMINAR');
                         }
                         echo "</tr>";
