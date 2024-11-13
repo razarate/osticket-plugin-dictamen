@@ -32,6 +32,10 @@ if ($GLOBALS['esta_activado']) {
 				background-color: #b8ffbb;
 			}
 
+			.filaDiscrepancia {
+				background-color: lightyellow;
+			}
+
 			.header-container {
 				display: flex;
 				/* Usar flexbox para alinear elementos en una fila */
@@ -66,14 +70,15 @@ if ($GLOBALS['esta_activado']) {
 				padding: 10px;
 				/* Espaciado interno */
 				text-align: center;
-				border: 1px solid #ddd;
+				border: 1px solid lightsalmon;
 				/* Bordes suaves */
 			}
 
 			th {
-				background-color: #f2f2f2;
+				background-color: orangered;
 				/* Color de fondo de encabezados */
 				font-weight: bold;
+				color: white;
 			}
 
 			/* Ajuste para los botones */
@@ -192,6 +197,11 @@ if ($GLOBALS['esta_activado']) {
 				window.location.href = 'configuracion_dictamen.php';
 			}
 
+			function irAsignacion(ticketId, idEstado) {
+				var url = 'asignacion_dictamen.php?id=' + ticketId + '&idEstado=' + idEstado;
+				window.location.href = url; // Redirige a la URL construida
+			}
+
 			document.addEventListener('DOMContentLoaded', function() {
 				// Mostrar el contenido de la primera pestaña
 				document.querySelectorAll('.tab-navbar a').forEach(link => {
@@ -223,7 +233,7 @@ if ($GLOBALS['esta_activado']) {
 
 			async function generarPdf(preguntas_json, ticket_number, usuario) {
 				let preguntas = preguntas_json;
-				console.log(preguntas_json);
+				//console.log(preguntas_json);
 				const {
 					jsPDF
 				} = window.jspdf;
@@ -261,7 +271,7 @@ if ($GLOBALS['esta_activado']) {
 
 				var preguntaInfo = '';
 				var espacio = 58;
-					var espacioTabla = 65;
+				var espacioTabla = 65;
 				var id_staff = 0;
 				var numeroRespuesta = 0;
 				let preguntasPorStaff = {};
@@ -277,7 +287,7 @@ if ($GLOBALS['esta_activado']) {
 
 				const columns = ["ASPECTO A EVALUAR", "VALORACIÓN"];
 				Object.keys(preguntasPorStaff).forEach((id_staff, index) => {
-					numeroRespuesta = index +1;
+					numeroRespuesta = index + 1;
 					const rows = [];
 					const preguntasStaff = preguntasPorStaff[id_staff];
 					preguntasStaff.forEach(pregunta => {
@@ -340,7 +350,7 @@ if ($GLOBALS['esta_activado']) {
 					});
 
 
-					
+
 					// Generate the table of responses
 					doc.text('Dictaminador ' + numeroRespuesta, 15, espacio);
 					doc.autoTable({
@@ -403,13 +413,19 @@ if ($GLOBALS['esta_activado']) {
 				doc.text("Nombre y firma del Lector(a)", centerXFirma + (lineWidth / 2), sectionY - 5, {
 					align: "center"
 				});
-				doc.save('Oficio Dictamen No. Reg.'+ ticket_number + '.pdf');
+				doc.save('Oficio Dictamen No. Reg.' + ticket_number + '.pdf');
 			}
 
-			function generarWord(preguntas_json, ticket_number, usuario) {
+			function generarWord(preguntas_json, ticket_number, usuario, numStaffs) {
 				let preguntas = preguntas_json;
+				var documento = "";
 				// Cargar el archivo usando fetch
-				fetch('documento.docx')
+				if (numStaffs == 3) {
+					documento = "documento2.docx";
+				} else if (numStaffs == 2) {
+					documento = "documento.docx";
+				}
+				fetch(documento)
 					.then(response => response.blob())
 					.then(blob => {
 						const reader = new FileReader();
@@ -420,29 +436,51 @@ if ($GLOBALS['esta_activado']) {
 
 							// Crear un objeto datos que contendrá el número de ticket y todas las preguntas
 							const datos = {
-								ticket: ticket_number, // Añade el número de ticket a los datos
+								ticket: ticket_number,
 								usuario: usuario
 							};
 
-							// Recorrer las preguntas y configurar cada una con sus placeholders {p1}, {p2}, etc.
-							preguntas.forEach((pregunta, index) => {
-								const placeholder = pregunta.pregunta;
-								// Obtener el label como a1, t1, etc.
-								// Verificar si el placeholder empieza con "a"
-								if (placeholder && placeholder == 'r1.1') {
-									datos[placeholder] = pregunta.respuesta || ""; // Añadir cada pregunta con su respectivo placeholder si empieza con "a"
-								} else if (placeholder && placeholder.startsWith("a")) {
-									datos[placeholder] = pregunta.respuesta || "";
-								} else if (placeholder && placeholder.startsWith("t")) {
-									datos[placeholder] = pregunta.pregunta_label || "";
-								} else if (placeholder && placeholder.startsWith("p")) {
-									datos[placeholder] = formatHtmlText(pregunta.respuesta) || "";
-								} else if (placeholder && placeholder.startsWith("v")) {
-									datos[placeholder] = pregunta.respuesta || "";
+							// Obtener la fecha actual
+							const fecha = new Date();
+							const opcionesMes = {
+								month: 'long'
+							}; // Opciones para obtener el mes en texto (e.g., "octubre")
+
+							datos.dia = fecha.getDate();
+							datos.mes = fecha.toLocaleDateString('es-ES', opcionesMes); // Obtiene el mes en texto en español
+							datos.annio = fecha.getFullYear();
+
+							// Agrupar preguntas por id_staff
+							let preguntasPorStaff = {};
+							preguntas.forEach(pregunta => {
+								if (!preguntasPorStaff[pregunta.id_staff]) {
+									preguntasPorStaff[pregunta.id_staff] = [];
 								}
+								preguntasPorStaff[pregunta.id_staff].push(pregunta);
 							});
 
-							// Ahora que datos contiene todos los placeholders necesarios, se configura en doc
+							// Recorrer cada grupo de preguntas por id_staff
+							Object.keys(preguntasPorStaff).forEach((id_staff, index) => {
+								const preguntasStaff = preguntasPorStaff[id_staff];
+								const staffIndex = index + 1;
+								let numRespuesta = 1;
+
+								preguntasStaff.forEach((pregunta) => {
+									if (pregunta.pregunta && pregunta.pregunta.startsWith("r")) {
+										const placeholder = `r${staffIndex}.${numRespuesta}`;
+										datos[placeholder] = pregunta.respuesta || "";
+										numRespuesta++;
+									} else if (pregunta.pregunta && pregunta.pregunta.startsWith("t")) {
+										const placeholder = `t${staffIndex}.${numRespuesta}`;
+										datos[placeholder] = pregunta.pregunta_label || "";
+									} else if (pregunta.pregunta && pregunta.pregunta.startsWith("v")) {
+										const placeholder = `v${staffIndex}.1`;
+										datos[placeholder] = pregunta.respuesta || "";
+									}
+								});
+							});
+
+							// Configurar los datos en el documento
 							doc.setData(datos);
 
 							try {
@@ -460,7 +498,7 @@ if ($GLOBALS['esta_activado']) {
 							const output = doc.getZip().generate({
 								type: "blob"
 							});
-							saveAs(output, 'Oficio Dictamen No. Reg.'+ ticket_number + '.docx'); // Guardar el archivo modificado
+							saveAs(output, 'Oficio Dictamen No. Reg.' + ticket_number + '.docx'); // Guardar el archivo modificado
 						};
 
 						reader.readAsBinaryString(blob);
@@ -511,41 +549,41 @@ if ($GLOBALS['esta_activado']) {
 					case 0:
 						$idEstado = 1;
 						$estadoAsignar = 'CONSULTAR';
-						$estadoDictamen = 'Sin Dictaminar';
+						$estadoDictamen = 'SIN DICTAMINAR';
 						break;
 					case 1:
 						$idEstado = 1;
 						$estadoAsignar = 'CONSULTAR';
-						$estadoDictamen = 'En proceso';
+						$estadoDictamen = 'EN PROCESO';
 						break;
 					case 2:
 						if ($num_diferencia == 1 && db_num_rows($res_asignacion) == 3) {
 							$idEstado = 1;
 							$estadoAsignar = 'CONSULTAR';
-							$estadoDictamen = 'En proceso';
+							$estadoDictamen = 'EN PROCESO';
 						} elseif ($num_diferencia == 1 && db_num_rows($res_asignacion) == 2) {
 							$idEstado = 2;
 							$estadoAsignar = 'ASIGNAR(3ro)';
-							$estadoDictamen = 'Discrepancia';
+							$estadoDictamen = 'DISCREPANCIA';
 							$deshabilitar = 'disabled';
 						} elseif ($num_diferencia == 2 || $num_diferencia == 0) {
 							$idEstado = 1;
 							$estadoAsignar = 'CONSULTAR';
-							$estadoDictamen = 'Evaluado';
+							$estadoDictamen = 'EVALUADO';
 							$deshabilitar = 'disabled';
 						}
 						break;
 					case 3:
 						$idEstado = 1;
 						$estadoAsignar = 'CONSULTAR';
-						$estadoDictamen = 'Evaluado';
+						$estadoDictamen = 'EVALUADO';
 						$deshabilitar = 'disabled';
 						break;
 				}
 			} else {
 				$idEstado = 0;
 				$estadoAsignar = 'ASIGNAR';
-				$estadoDictamen = 'Sin dictaminar';
+				$estadoDictamen = 'SIN DICTAMINAR';
 				$deshabilitar = 'disabled';
 			}
 
@@ -560,7 +598,7 @@ if ($GLOBALS['esta_activado']) {
 				'idEstado' => $idEstado
 			];
 
-			if ($estadoDictamen === 'Evaluado') {
+			if ($estadoDictamen === 'EVALUADO') {
 				$dictaminadosTickets[] = $ticketData;
 			} else {
 				$sinDictaminarTickets[] = $ticketData;
@@ -569,87 +607,125 @@ if ($GLOBALS['esta_activado']) {
 
 		<div class="header-container">
 			<h1>Dictaminación</h1>
-			<input type="button" class="botones" onclick="irConfiguracion()" value="Configuración">
+			<input type="button" class="botones" onclick="irConfiguracion()" value="CONFIGURACIÓN">
 		</div>
 		<br>
-		<nav>
-			<ul class="tab-navbar">
-				<li><a href="#tab1" class="activo">Sin Dictaminar</a></li>
-				<li><a href="#tab2">Dictaminados</a></li>
-			</ul>
-		</nav>
+		<?php
+		$sql_config = db_query("SELECT * FROM " . $TABLE_PREFIX . "dictaminacion_respuestas");
+		if (db_num_rows($sql_config) >= 1) {
 
-		<div id="tab1" class="tab-content">
-			<table border="1">
-				<thead>
-					<tr>
-						<th>TICKET</th>
-						<th>ASIGNACIÓN</th>
-						<th>ESTADO</th>
-						<th>EDITAR</th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php foreach ($sinDictaminarTickets as $ticket): ?>
-						<tr>
-							<td>
-								<p class="tickets">#<?= $ticket['number'] ?></p><?= $ticket['usuario'] ?>
-							</td>
-							<td><a href="asignacion_dictamen.php?id=<?= $ticket['ticket_id'] ?>&idEstado=<?= $ticket['idEstado'] ?>"><?= $ticket['asignar'] ?></a></td>
-							<td><?= $ticket['estado'] ?></td>
-							<td><input type="button" class="botones" value="Editar" onclick="editar(<?= $ticket['ticket_id'] ?>)" <?= $ticket['deshabilitar'] ?>></td>
-						</tr>
-					<?php endforeach; ?>
-				</tbody>
-			</table>
-		</div>
 
-		<div id="tab2" class="tab-content" style="display:none;">
-			<table border="1">
-				<thead>
-					<tr>
-						<th>TICKET</th>
-						<th>ASIGNACIÓN</th>
-						<th>ESTADO</th>
-						<th>EXPORTAR</th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php foreach ($dictaminadosTickets as $ticket):
-						$ticket_number = $ticket['number'];
-						$usuario = $ticket['usuario'];
-						$ticket_id = $ticket['ticket_id'];
-						$sql_form = "SELECT * FROM " . $TABLE_PREFIX . "dictaminacion_respuestas WHERE id_ticket=$ticket_id ORDER BY id_respuesta";
-						$result_form = db_query($sql_form);
+		?>
+			<nav>
+				<ul class="tab-navbar">
+					<li><a href="#tab1" class="activo">SIN DICTAMINAR</a></li>
+					<li><a href="#tab2">DICTAMINADOS</a></li>
+				</ul>
+			</nav>
 
-						$preguntas = [];
-						while ($fila_preguntas = db_fetch_array($result_form)) {
-							$preguntas[] = $fila_preguntas;
-						}
-						$preguntas_json = json_encode($preguntas);
-					?>
-						<tr>
-							<td>
-								<p class="tickets">#<?= $ticket_number ?></p><?= $usuario ?>
-							</td>
-							<td><a href="asignacion_dictamen.php?id=<?= $ticket_id ?>&idEstado=<?= $ticket['idEstado'] ?>"><?= $ticket['asignar'] ?></a></td>
-							<td><?= $ticket['estado'] ?></td>
-							<td class="button-container">
-								<?php
-								echo "<button class='imageW-button' onclick='generarWord($preguntas_json, " . json_encode($ticket_number) . "," . json_encode($usuario) . ")'></button>";
-								echo "<button class='image-button' onclick='generarPdf($preguntas_json, " . json_encode($ticket_number) . ", " . json_encode($usuario) . ")'></button>";
-								?>
+			<div id="tab1" class="tab-content">
+				<?php
+				if ($sinDictaminarTickets) {
+				?>
+					<table border="1">
+						<thead>
+							<tr>
+								<th>TICKET</th>
+								<th>ASIGNACIÓN</th>
+								<th>ESTADO</th>
+								<th>EDITAR</th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php foreach ($sinDictaminarTickets as $ticket): ?>
+								<tr>
+									<td>
+										<p class="tickets">#<?= $ticket['number'] ?></p><?= $ticket['usuario'] ?>
+									</td>
+									<td><input type="button" value="<?= $ticket['asignar'] ?>" onclick="irAsignacion(<?= $ticket['ticket_id'] ?>, <?= $ticket['idEstado'] ?>)"></td>
+									<?php
+									if ($ticket['estado'] === 'DISCREPANCIA') {
+										echo "<td class='filaDiscrepancia'>" . htmlspecialchars($ticket['estado']) . "</td>";
+									} elseif ($ticket['estado'] === 'EN PROCESO') {
+										echo "<td class='filaEvaluado'>" . htmlspecialchars($ticket['estado']) . "</td>";
+									} else {
+										echo "<td>" . htmlspecialchars($ticket['estado']) . "</td>"; // Para manejar otros posibles estados
+									}
+									?>
 
-							</td>
-						</tr>
-					<?php endforeach; ?>
-				</tbody>
-			</table>
-		</div>
+									<td><input type="button" class="botones" value="EDITAR" onclick="editar(<?= $ticket['ticket_id'] ?>)" <?= $ticket['deshabilitar'] ?>></td>
+								</tr>
+							<?php endforeach; ?>
+						</tbody>
+					</table>
+				<?php
+				} else {
+					echo "<p>Por el momento no hay tickets en dictaminación</p>";
+				} ?>
+			</div>
+
+			<div id="tab2" class="tab-content" style="display:none;">
+				<?php
+				if ($dictaminadosTickets) {
+				?>
+					<table border="1">
+						<thead>
+							<tr>
+								<th>TICKET</th>
+								<th>ASIGNACIÓN</th>
+								<th>ESTADO</th>
+								<th>EXPORTAR</th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php foreach ($dictaminadosTickets as $ticket):
+								$ticket_number = $ticket['number'];
+								$usuario = $ticket['usuario'];
+								$ticket_id = $ticket['ticket_id'];
+								$sql_form = "SELECT * FROM " . $TABLE_PREFIX . "dictaminacion_respuestas WHERE id_ticket=$ticket_id ORDER BY id_respuesta";
+								$result_form = db_query($sql_form);
+
+								$preguntas = [];
+								while ($fila_preguntas = db_fetch_array($result_form)) {
+									$preguntas[] = $fila_preguntas;
+								}
+								$preguntas_json = json_encode($preguntas);
+							?>
+								<tr>
+									<td>
+										<p class="tickets">#<?= $ticket_number ?></p><?= $usuario ?>
+									</td>
+									<td><input type="button" value="<?= $ticket['asignar'] ?>" onclick="irAsignacion(<?= $ticket['ticket_id'] ?>, <?= $ticket['idEstado'] ?>)"></td>
+									<td><?= $ticket['estado'] ?></td>
+									<td class="button-container">
+										<?php
+										$numStaffs = 0;
+										$resultado = db_query("SELECT * FROM " . $TABLE_PREFIX . "dictaminacion_asignaciones WHERE id_ticket=$ticket_id");
+										if (db_num_rows($resultado) == 3) {
+											$numStaffs = 3;
+										} else {
+											$numStaffs = 2;
+										}
+										echo "<button class='imageW-button' onclick='generarWord($preguntas_json, " . json_encode($ticket_number) . "," . json_encode($usuario) . "," . $numStaffs . ")'></button>";
+										echo "<button class='image-button' onclick='generarPdf($preguntas_json, " . json_encode($ticket_number) . ", " . json_encode($usuario) . ")'></button>";
+										?>
+
+									</td>
+								</tr>
+							<?php endforeach; ?>
+						</tbody>
+					</table>
+				<?php } else {
+					echo "<p>Por el momento no hay tickets dictaminados.</p>";
+				} ?>
+			</div>
 <?php
+		} else {
+			echo "<p>Seleccione la lista y sus correspondientes respuestas correctas en la opción de 'Configuración' antes de la asignación.</p>";
+		}
 	} else {
 		echo "Verifique que haya un solo estado del ticket llamado 'dictaminación' o 'En dictaminación'. 
-        </br>Lo puede verificar dentro de la lista llamada 'ticket statues'";
+        </br>Lo puede verificar dentro de la lista llamada 'ticket statues.'";
 	}
 } else {
 	echo "Verifique que su plugin Dictaminación Plugin se encuentre activado.";

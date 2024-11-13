@@ -233,8 +233,8 @@ if ($GLOBALS['esta_activado']) {
 				$sql = "SELECT staff_id, firstname, lastname, username FROM " . $TABLE_PREFIX . "staff WHERE isactive=1";
 				$staffs = db_query($sql);
 			} else if ($estado_id == 1) {
-				$sql = "SELECT s.staff_id, s.firstname, s.lastname, s.username 
-				FROM " . $TABLE_PREFIX . "staff AS s
+				$sql = "SELECT DISTINCT s.staff_id, s.firstname, s.lastname, s.username 
+				FROM " . $TABLE_PREFIX . "staff AS s 
 				JOIN " . $TABLE_PREFIX . "dictaminacion_asignaciones AS a ON s.staff_id = a.id_staff";
 				$staffs = db_query($sql);
 			} else {
