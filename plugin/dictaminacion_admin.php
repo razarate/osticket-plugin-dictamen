@@ -33,7 +33,7 @@ if ($GLOBALS['esta_activado']) {
 			}
 
 			.filaDiscrepancia {
-				background-color: lightyellow;
+				background-color: lightcoral;
 			}
 
 			.header-container {
@@ -473,10 +473,7 @@ if ($GLOBALS['esta_activado']) {
 									} else if (pregunta.pregunta && pregunta.pregunta.startsWith("t")) {
 										const placeholder = `t${staffIndex}.${numRespuesta}`;
 										datos[placeholder] = pregunta.pregunta_label || "";
-									} else if (pregunta.pregunta && pregunta.pregunta.startsWith("v")) {
-										const placeholder = `v${staffIndex}.1`;
-										datos[placeholder] = pregunta.respuesta || "";
-									}
+									} 
 								});
 							});
 
@@ -611,7 +608,7 @@ if ($GLOBALS['esta_activado']) {
 		</div>
 		<br>
 		<?php
-		$sql_config = db_query("SELECT * FROM " . $TABLE_PREFIX . "dictaminacion_respuestas");
+		$sql_config = db_query("SELECT * FROM " . $TABLE_PREFIX . "dictaminacion_opciones");
 		if (db_num_rows($sql_config) >= 1) {
 
 
