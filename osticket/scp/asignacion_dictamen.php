@@ -232,9 +232,31 @@ if ($GLOBALS['esta_activado']) {
 			if ($estado_id == 0) {
 				$sql = "SELECT staff_id, firstname, lastname, username FROM " . $TABLE_PREFIX . "staff WHERE isactive=1";
 				$staffs = db_query($sql);
-			} else {
-				$sql = "SELECT staff_id, firstname, lastname, username FROM " . $TABLE_PREFIX . "staff";
+			} else if ($estado_id == 1) {
+				$sql = "SELECT s.staff_id, s.firstname, s.lastname, s.username 
+				FROM " . $TABLE_PREFIX . "staff AS s
+				JOIN " . $TABLE_PREFIX . "dictaminacion_asignaciones AS a ON s.staff_id = a.id_staff";
 				$staffs = db_query($sql);
+			} else {
+				$sql_verificacion = "SELECT s.staff_id, s.firstname, s.lastname, s.username 
+                     FROM " . $TABLE_PREFIX . "staff AS s
+                     JOIN " . $TABLE_PREFIX . "dictaminacion_asignaciones AS a ON s.staff_id = a.id_staff 
+                     WHERE s.isactive = 0";
+
+				// Ejecuta la consulta y almacena el resultado
+				$result = db_query($sql_verificacion);
+
+				// Verifica si hay al menos una fila en el resultado
+				if (db_num_rows($result) >= 1) {
+					$sql = "SELECT staff_id, firstname, lastname, username FROM " . $TABLE_PREFIX . "staff";
+					$staffs = db_query($sql);
+				} else {
+					// Si no hay resultados en la primera consulta, ejecuta la consulta alternativa
+					$sql = "SELECT staff_id, firstname, lastname, username 
+					FROM " . $TABLE_PREFIX . "staff 
+					WHERE isactive = 1";
+					$staffs = db_query($sql);
+				}
 			}
 
 			while ($row = db_fetch_array($staffs)) {
