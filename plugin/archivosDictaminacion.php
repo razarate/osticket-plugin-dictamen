@@ -7,6 +7,7 @@ class ArchivosDictaminacion
     private $configuracion_admin;
     private $formulario_dictaminacion;
     private $asignacion_dictamen;
+    private $dictaminacion_editar;
     private $libreria1;
     private $libreria2;
     private $libreria3;
@@ -25,6 +26,7 @@ class ArchivosDictaminacion
         $this->configuracion_admin = "configuracion_dictamen.php";
         $this->formulario_dictaminacion = "formulario_dictamen.php";
         $this->asignacion_dictamen = "asignacion_dictamen.php";
+        $this->dictaminacion_editar = "dictaminacion_editar.php";
         $this->libreria1 = "jspdf.plugin.autotable.min.js";
         $this->libreria2 = "jspdf.umd.min.js";
         $this->libreria3 = "pizzip.min.js";
@@ -45,6 +47,7 @@ class ArchivosDictaminacion
             $this->configuracion_admin,
             $this->formulario_dictaminacion,
             $this->asignacion_dictamen,
+            $this->dictaminacion_editar,
             $this->libreria1,
             $this->libreria2,
             $this->libreria3,
@@ -76,6 +79,7 @@ class ArchivosDictaminacion
             $this->configuracion_admin,
             $this->formulario_dictaminacion,
             $this->asignacion_dictamen,
+            $this->dictaminacion_editar,
             $this->libreria1,
             $this->libreria2,
             $this->libreria3,

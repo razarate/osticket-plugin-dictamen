@@ -13,6 +13,7 @@ return array(
         'dictaminacion_admin.php',
         'configuracion_dictamen.php',
         'formulario_dictamen.php',
+        'dictaminacion_editar.php',
         'jspdf.plugin.autotable.min.js',
         'jspdf.umd.min.js',
         'pizzip.min.js',

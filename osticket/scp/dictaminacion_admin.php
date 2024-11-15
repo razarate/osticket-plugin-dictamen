@@ -197,9 +197,19 @@ if ($GLOBALS['esta_activado']) {
 				window.location.href = 'configuracion_dictamen.php';
 			}
 
-			function irAsignacion(ticketId, idEstado) {
-				var url = 'asignacion_dictamen.php?id=' + ticketId + '&idEstado=' + idEstado;
-				window.location.href = url; // Redirige a la URL construida
+			function irAsignacion(ticketId, idEstado, edicion) {
+				if (edicion == 1) {
+					window.location.href = 'asignacion_dictamen.php?id=' + ticketId+ '&idEstado=' + idEstado + '&edicion=' + edicion;
+				} else {
+					var url = 'asignacion_dictamen.php?id=' + ticketId + '&idEstado=' + idEstado;
+					window.location.href = url; // Redirige a la URL construida
+				}
+
+			}
+
+			function irEditar(ticket_id) {
+				var url = 'dictaminacion_editar.php?id=' + ticket_id;
+				window.location.href = url;
 			}
 
 			document.addEventListener('DOMContentLoaded', function() {
@@ -473,7 +483,7 @@ if ($GLOBALS['esta_activado']) {
 									} else if (pregunta.pregunta && pregunta.pregunta.startsWith("t")) {
 										const placeholder = `t${staffIndex}.${numRespuesta}`;
 										datos[placeholder] = pregunta.pregunta_label || "";
-									} 
+									}
 								});
 							});
 
@@ -639,7 +649,13 @@ if ($GLOBALS['esta_activado']) {
 									<td>
 										<p class="tickets">#<?= $ticket['number'] ?></p><?= $ticket['usuario'] ?>
 									</td>
-									<td><input type="button" value="<?= $ticket['asignar'] ?>" onclick="irAsignacion(<?= $ticket['ticket_id'] ?>, <?= $ticket['idEstado'] ?>)"></td>
+									<?php
+									$edicion = 0;
+									if ($ticket['estado'] == 'DISCREPANCIA' || $ticket['estado'] == 'EVALUADO') {
+										$edicion = 1;
+									}
+									?>
+									<td><input type="button" value="<?= $ticket['asignar'] ?>" onclick="irAsignacion(<?= $ticket['ticket_id'] ?>, <?= $ticket['idEstado'] ?>, <?= $edicion ?>)"></td>
 									<?php
 									if ($ticket['estado'] === 'DISCREPANCIA') {
 										echo "<td class='filaDiscrepancia'>" . htmlspecialchars($ticket['estado']) . "</td>";
@@ -672,6 +688,7 @@ if ($GLOBALS['esta_activado']) {
 								<th>ASIGNACIÓN</th>
 								<th>ESTADO</th>
 								<th>EXPORTAR</th>
+
 							</tr>
 						</thead>
 						<tbody>
@@ -692,7 +709,13 @@ if ($GLOBALS['esta_activado']) {
 									<td>
 										<p class="tickets">#<?= $ticket_number ?></p><?= $usuario ?>
 									</td>
-									<td><input type="button" value="<?= $ticket['asignar'] ?>" onclick="irAsignacion(<?= $ticket['ticket_id'] ?>, <?= $ticket['idEstado'] ?>)"></td>
+									<?php
+									$edicion = 0;
+									if ($ticket['estado'] != 'SIN DICTAMINAR') {
+										$edicion = 1;
+									}
+									?>
+									<td><input type="button" value="<?= $ticket['asignar'] ?>" onclick="irAsignacion(<?= $ticket['ticket_id'] ?>, <?= $ticket['idEstado'] ?>, <?= $edicion ?>)"></td>
 									<td><?= $ticket['estado'] ?></td>
 									<td class="button-container">
 										<?php
@@ -706,8 +729,9 @@ if ($GLOBALS['esta_activado']) {
 										echo "<button class='imageW-button' onclick='generarWord($preguntas_json, " . json_encode($ticket_number) . "," . json_encode($usuario) . "," . $numStaffs . ")'></button>";
 										echo "<button class='image-button' onclick='generarPdf($preguntas_json, " . json_encode($ticket_number) . ", " . json_encode($usuario) . ")'></button>";
 										?>
-
 									</td>
+									<!-- 										<td><input type="button" value="EDITAR" onclick="irEditar()"></td>
+ -->
 								</tr>
 							<?php endforeach; ?>
 						</tbody>

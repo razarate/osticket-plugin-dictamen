@@ -20,6 +20,11 @@ if ($GLOBALS['esta_activado']) {
 		global $ticket_id;
 	}
 
+	if (isset($_GET['edicion'])) {
+		$edicion = intval($_GET['edicion']);
+		global $edicion;
+	}
+
 	if (isset($_GET['idEstado'])) {
 		$estado_id = intval($_GET['idEstado']);
 		global $estado_id;
@@ -135,7 +140,7 @@ if ($GLOBALS['esta_activado']) {
 			background-color: orangered;
 			/* Color de fondo de encabezados */
 			font-weight: bold;
-			color:white;
+			color: white;
 		}
 
 		/* Ajuste para los botones */
@@ -176,6 +181,11 @@ if ($GLOBALS['esta_activado']) {
 	<script>
 		var limite = <?php echo $limite; ?>;
 		var esValido = false;
+
+		function irEditar(ticket_id, staff) {
+			var url = 'dictaminacion_editar.php?id=' + ticket_id + '&staff=' + staff;
+			window.location.href = url;
+		}
 
 		function initializeForm() {
 			actualizarValidacion();
@@ -230,6 +240,9 @@ if ($GLOBALS['esta_activado']) {
 			<th>ASIGNAR</th>
 
 			<?php
+			if ($edicion == 1) {
+				echo "<th>EDITAR</th>";
+			}
 			if ($estado_id == 0) {
 				$sql = "SELECT staff_id, firstname, lastname, username FROM " . $TABLE_PREFIX . "staff WHERE isactive=1";
 				$staffs = db_query($sql);
@@ -272,6 +285,7 @@ if ($GLOBALS['esta_activado']) {
 				echo "<td>" . $usuario . "</td>";
 
 				echo "<td><input class='single-checkbox' type='checkbox' id='$id_staff' name='opciones[]' value='$id_staff'></td>";
+
 				echo "<input type='hidden' id='$usuario' name='anteriores[]'>";
 
 				$sql_estado = "SELECT * FROM " . $TABLE_PREFIX . "dictaminacion WHERE id_ticket = $ticket_id AND id_staff = $id_staff AND id_estado=1";
@@ -289,6 +303,9 @@ if ($GLOBALS['esta_activado']) {
 					case 1:
 						while ($fila_estado = db_fetch_array($res_asignacion)) {
 							if ($fila_estado['id_staff'] == $id_staff) {
+								if ($edicion == 1) {
+									echo "<td><input type='button' id='s$id_staff' value='EDITAR' onclick='irEditar($ticket_id, $id_staff)'>";
+								}
 								echo "<script>
 					var opcion = document.getElementById($id_staff);
 					opcion.checked = true;
@@ -301,7 +318,11 @@ if ($GLOBALS['esta_activado']) {
 						break;
 					case 2:
 						while ($fila_estado = db_fetch_array($res_asignacion)) {
+
 							if ($fila_estado['id_staff'] == $id_staff) {
+								if ($edicion == 1) {
+									echo "<td><input type='button' id='s$id_staff' value='EDITAR' onclick='irEditar($ticket_id, $id_staff)'>";
+								}
 								echo "<script>
 					var opcion = document.getElementById($id_staff);
 					opcion.checked = true;
@@ -316,6 +337,7 @@ if ($GLOBALS['esta_activado']) {
 						while ($fila_estado = db_fetch_array($res_asignacion)) {
 							$conteo = $conteo + 1;
 							if ($fila_estado['id_staff'] == $id_staff) {
+
 
 								echo "<script>
 					var opcion = document.getElementById($id_staff);
