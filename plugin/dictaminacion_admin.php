@@ -233,7 +233,7 @@ if ($GLOBALS['esta_activado']) {
 
 			async function generarPdf(preguntas_json, ticket_number, usuario) {
 				let preguntas = preguntas_json;
-				//console.log(preguntas_json);
+				console.log(preguntas_json);
 				const {
 					jsPDF
 				} = window.jspdf;
@@ -291,7 +291,7 @@ if ($GLOBALS['esta_activado']) {
 					const rows = [];
 					const preguntasStaff = preguntasPorStaff[id_staff];
 					preguntasStaff.forEach(pregunta => {
-						if (pregunta.pregunta == "valoracion") {
+						if (pregunta.pregunta_label.includes("Valoración")) {
 							rows.push([{
 									content: pregunta.pregunta_label,
 									styles: {

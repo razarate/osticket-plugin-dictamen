@@ -33,7 +33,7 @@ if ($GLOBALS['esta_activado']) {
 			}
 
 			.filaDiscrepancia {
-				background-color: lightyellow;
+				background-color: lightcoral;
 			}
 
 			.header-container {
@@ -233,7 +233,7 @@ if ($GLOBALS['esta_activado']) {
 
 			async function generarPdf(preguntas_json, ticket_number, usuario) {
 				let preguntas = preguntas_json;
-				//console.log(preguntas_json);
+				console.log(preguntas_json);
 				const {
 					jsPDF
 				} = window.jspdf;
@@ -291,7 +291,7 @@ if ($GLOBALS['esta_activado']) {
 					const rows = [];
 					const preguntasStaff = preguntasPorStaff[id_staff];
 					preguntasStaff.forEach(pregunta => {
-						if (pregunta.pregunta == "valoracion") {
+						if (pregunta.pregunta_label.includes("Valoración")) {
 							rows.push([{
 									content: pregunta.pregunta_label,
 									styles: {
@@ -473,10 +473,7 @@ if ($GLOBALS['esta_activado']) {
 									} else if (pregunta.pregunta && pregunta.pregunta.startsWith("t")) {
 										const placeholder = `t${staffIndex}.${numRespuesta}`;
 										datos[placeholder] = pregunta.pregunta_label || "";
-									} else if (pregunta.pregunta && pregunta.pregunta.startsWith("v")) {
-										const placeholder = `v${staffIndex}.1`;
-										datos[placeholder] = pregunta.respuesta || "";
-									}
+									} 
 								});
 							});
 
@@ -611,7 +608,7 @@ if ($GLOBALS['esta_activado']) {
 		</div>
 		<br>
 		<?php
-		$sql_config = db_query("SELECT * FROM " . $TABLE_PREFIX . "dictaminacion_respuestas");
+		$sql_config = db_query("SELECT * FROM " . $TABLE_PREFIX . "dictaminacion_opciones");
 		if (db_num_rows($sql_config) >= 1) {
 
 
