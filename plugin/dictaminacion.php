@@ -6,6 +6,7 @@ require_once(STAFFINC_DIR . 'header.inc.php');
 
 
 $agent_id = $thisstaff->getId();
+$isAdmin = $thisstaff->isadmin();
 global $agent_id;
 
 if ($GLOBALS['esta_activado']) {
@@ -207,12 +208,20 @@ if ($GLOBALS['esta_activado']) {
 
                         if (db_num_rows($estado) == 1) {
                             echo "<tr>";
-                            echo "<td><p class='tickets'>#" . $ticket_number . "</p>$usuario</td>";
+                            if ($isAdmin){
+                                echo "<td><p class='tickets'>#" . $ticket_number . "</p>$usuario</td>";
+                            } else {
+                                echo "<td><p class='tickets'>#" . $ticket_number . "</p></td>";
+                            }
                             echo "<td  class='filaEvaluado'>EVALUADO</td>";
                             validarIrFormulario($ir_formulario, $ticket_id, $error, 'CONSULTAR');
                         } elseif (db_num_rows($estado) == 0) {
                             echo "<tr>";
-                            echo "<td><p class='tickets'>#" . $ticket_number . "</p>$usuario</td>";
+                            if ($isAdmin){
+                                echo "<td><p class='tickets'>#" . $ticket_number . "</p>$usuario</td>";
+                            } else {
+                                echo "<td><p class='tickets'>#" . $ticket_number . "</p></td>";
+                            }
                             echo "<td>PENDIENTE</td>";
                             validarIrFormulario($ir_formulario, $ticket_id, $error, 'DICTAMINAR');
                         }
